@@ -37,7 +37,7 @@
     WeaponSystem ..> ArmorComponent : binds OnHit
 ```
 
-3. 请将整体规划,先写入到Index.md文件里面.
+3. 请将整体规划,包括具体类型的代码,相应的数据结构代码,文件命名和路径,写入到Index.md文件里面,PlantUML写入到design.puml文件里面.
 
 4. 对这个游戏我目前设想: 对于所有能发射的武器,定义GenericFireArm类型,需要有Projectile发射物.至于后坐力,弹药,散布,瞄准镜,都是对应的模块.被攻击的目标有Armor模块.整体的操作对象是Tank,需要设计它和Controller的关系.我还希望坦克可以做到更复杂的受到攻击效果,比如不同的模块,像是起火,发动机,不能行动之类的问题.
 

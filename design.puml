@@ -1,0 +1,149 @@
+@startuml
+title Tank Game Architecture (Tank → Hull → Turret → Weapon)
+
+' ===========================
+' Tank (Pawn)
+' ===========================
+class BP_Tank <<pawn>> {
+    +AimAt(targetDirection: FVector)
+    +FireWeapon()
+    +SwitchWeapon()
+    +CurrentWeapon : BP_GenericFireArm
+    <<event>> OnArmorHitHandler(hit: FHitResult)
+    <<event>> OnArmorPenetratedHandler(hit: FHitResult, moduleId: int)
+}
+
+class BP_TankController <<controller>> {
+    +HandleAimInput()
+    +HandleFireInput()
+    +HandleSwitchWeapon()
+}
+
+BP_TankController ..> BP_Tank : controls
+
+
+' ===========================
+' Tank Hull (Physical Body)
+' ===========================
+class BP_TankHull <<actor>> {
+    +RootComponent
+    +MovementComponent
+}
+
+class BP_ArmorComponent <<component>> {
+    <<delegate>> OnArmorHit(hit: FHitResult)
+    <<delegate>> OnArmorPenetrated(hit: FHitResult, moduleId: int)
+}
+
+class BP_ArmorModule <<component>> {
+    +Thickness : float
+    +Angle : float
+}
+
+class BP_DamageRouter <<component>>
+class BP_ModuleDamageHandler <<component>> {
+    <<delegate>> OnModuleStateChanged(moduleId: int, state: EModuleState)
+}
+
+BP_Tank *-- BP_TankHull
+BP_TankHull *-- BP_ArmorComponent
+BP_ArmorComponent *-- BP_ArmorModule
+BP_TankHull *-- BP_DamageRouter
+BP_TankHull *-- BP_ModuleDamageHandler
+
+BP_Tank ..> BP_ArmorComponent : binds OnArmorHit
+BP_Tank ..> BP_ArmorComponent : binds OnArmorPenetrated
+
+
+' ===========================
+' Turret (Yaw Control)
+' ===========================
+class BP_TankTurret <<actor>> {
+    +RotateYaw(delta: float)
+    MinYaw : float
+    MaxYaw : float
+}
+
+BP_Tank *-- BP_TankTurret
+
+
+' ===========================
+' Weapon (Pitch + Fire)
+' ===========================
+class BP_GenericFireArm <<actor>> {
+    +Fire()
+    +ElevatePitch(delta: float)
+    MinPitch : float
+    MaxPitch : float
+    <<delegate>> OnFire()
+    <<delegate>> OnOutOfAmmo()
+}
+
+class BP_Projectile <<actor>> {
+    <<delegate>> OnHit(hit: FHitResult)
+}
+
+BP_TankTurret *-- BP_GenericFireArm : ChildActorComponent
+BP_GenericFireArm ..> BP_Projectile : spawns
+
+
+' ===========================
+' Weapon Modules
+' ===========================
+class BP_RecoilModule <<component>>
+class BP_AmmoModule <<component>>
+class BP_SpreadModule <<component>>
+class BP_ScopeModule <<component>>
+
+BP_GenericFireArm *-- BP_RecoilModule
+BP_GenericFireArm *-- BP_AmmoModule
+BP_GenericFireArm *-- BP_SpreadModule
+BP_GenericFireArm *-- BP_ScopeModule
+
+
+' ===========================
+' Interfaces
+' ===========================
+interface IBP_Damageable {
+    +ApplyDamage(amount: float, hit: FHitResult)
+}
+
+interface IBP_Fireable {
+    +Fire()
+    +CanFire() : bool
+}
+
+interface IBP_ArmorOwner {
+    +GetArmorComponent() : BP_ArmorComponent
+}
+
+BP_Tank ..|> IBP_Damageable
+BP_GenericFireArm ..|> IBP_Fireable
+BP_TankHull ..|> IBP_ArmorOwner
+
+
+' ===========================
+' Data Assets
+' ===========================
+class DA_GenericFireArmData <<config>> {
+    Damage : float
+    FireRate : float
+}
+
+class DA_ProjectileData <<config>> {
+    InitialSpeed : float
+    MaxRange : float
+    PenetrationPower : float
+}
+
+class DA_ArmorModuleData <<config>> {
+    Thickness : float
+    Angle : float
+    ModuleType : EModuleType
+}
+
+BP_GenericFireArm ..> DA_GenericFireArmData
+BP_Projectile ..> DA_ProjectileData
+BP_ArmorModule ..> DA_ArmorModuleData
+
+@enduml
