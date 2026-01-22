@@ -1,0 +1,35 @@
+@startuml
+!include interfaces.puml
+
+class BP_Turret <<Actor>> {
+    .. Private Properties ..
+    - turretRotationComp : BP_TurretRotationComp    
+    - gunElevationComp : BP_GunElevationComp
+}
+
+class BP_TurretRotationComp <<ActorComponent>> {
+    ..Public Properties..
+    + minYaw : float
+    + maxYaw : float
+    + yawSpeed : float
+    
+    .. Public Methods ..
+    + RotateYaw(deltaYaw : float) : void
+}
+
+class BP_GunElevationComp <<ActorComponent>> {
+    ..Public Properties..
+    + minPitch : float
+    + maxPitch : float
+    + pitchSpeed : float
+    
+    .. Public Methods ..
+    + RotatePitch(deltaPitch : float) : void
+}
+
+BP_Turret ..|> ITurret : implements
+
+BP_Turret --> BP_TurretRotationComp : uses >
+BP_Turret --> BP_GunElevationComp : uses >
+
+@enduml

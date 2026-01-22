@@ -1,6 +1,6 @@
 @startuml
 ' skinparam classAttributeIconSize 0
-
+!include interfaces.puml
 ' ===========================
 ' 武器 Actor
 ' ===========================
@@ -20,12 +20,13 @@ class BP_GenericFireArm <<Actor>> {
     -InitializeWeapon() : void
     -CacheComponents() : void
 
-    .. Input Entrypoint ..
-    +CanFire() : bool
-    +CanReload() : bool
-    +Fire() : void
-    +Reload() : void
-    +SwitchAmmoType(index : int) : void
+    ' .. Input Entrypoint from IWeapon ..
+    ' + OnFireButtonDown() : void
+    ' + OnFireButtonRelease() : void
+    ' + OnReloadPressed() : void
+    ' + CanFire() : bool
+    ' + CanReload() : bool
+    ' + OnSwitchAmmoType(index : int) : void
 
     .. Event Handlers (FX/SFX/Physics) ..
     +OnFireHandle(ammoComp : BP_AmmoComp, spread : vector3) <<Event>>
@@ -54,6 +55,9 @@ class BP_GenericFireArm <<Actor>> {
     +OnSpreadChanged(vector3 newSpread) <<Delegate>>
 }
 
+BP_GenericFireArm ..|> IWeapon : implements
+BP_GenericFireArm ..|> IEquipable : implements
+
 ' ===========================
 ' FireComp（开火逻辑）
 ' ===========================
@@ -64,12 +68,17 @@ class BP_FireComp <<ActorComponent>> {
     +heatPerShot : float
     +heatCooldownRate : float
     +hold2Fire : bool
+    +holdTimeBeforeFire : float
+
+    .. Call Entrypoints ..
+    +FireButtonDown(ammoComp : BP_AmmoComp, spreadComp : BP_SpreadComp) : bool
+    +FireButtonRelease() : void
 
     .. Private Fields..
     -lastFireTime : float
 
-    .. Call Entrypoints ..
-    +Fire(ammoComp : BP_AmmoComp, spreadComp : BP_SpreadComp) : bool
+    .. Private Methods ..
+    - FireLoop(ammoComp : BP_AmmoComp, spreadComp : BP_SpreadComp) : void
 
     .. Getter ..
     + CanFire() : bool

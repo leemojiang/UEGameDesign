@@ -1,0 +1,39 @@
+@startuml
+' ===========================
+' 武器 Interface (InputHandler)
+' ===========================
+interface IWeapon{
+    .. Input Events ..
+    + OnFireButtonDown() : void
+    + OnFireButtonRelease() : void
+    + OnReloadPressed() : void
+    + OnSwitchAmmoType(index : int) : void
+    .. Query ..
+    + CanFire() : bool
+    + CanReload() : bool
+}
+
+interface IEquipable{
+    + OnEquip() : void
+    + OnUnEquip() : void
+}
+
+interface ITurret{
+    .. High-level aiming ..
+    + AimAt(targetLocation : vector3) : void
+    + AimDirecion(direction : vector3) : void
+    
+    .. Low-level rotation input ..
+    ' DeltaYaw = axisValue * YawSpeed * DeltaTime; axisValue ∈ [-1,1]
+
+
+    + AddYawInput(axisValue : float) : void
+    + AddPitchInput(axisValue : float) : void
+
+    .. Query ..
+    + GetCurrentYaw() : float
+    + GetCurrentPitch() : float
+    + IsAimedAt(targetLocation : vector3, threshold : float) : bool
+}
+
+@enduml
