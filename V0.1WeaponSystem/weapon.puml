@@ -7,34 +7,51 @@
 class BP_GenericFireArm <<Actor>> {
     .. Components (cached references)..
     -fireComp : BP_FireComp
-    -ammoComp : List<BP_AmmoComp>
+    -ammoComps : List<BP_AmmoComp>
     -spreadComp : BP_SpreadComp
     -recoilComp : BP_RecoilComp
 
     .. Weapon State ..
     ' -bIsReloading : bool
     ' -currentAmmo : int
-    - curAmmoIndex: int
+    - currentAmmoIndex : intt
 
     .. Initialization ..
     -InitializeWeapon() : void
     -CacheComponents() : void
 
     .. Input Entrypoint ..
+    +CanFire() : bool
+    +CanReload() : bool
     +Fire() : void
     +Reload() : void
     +SwitchAmmoType(index : int) : void
 
-    .. Event Handlers (FX/SFX) ..
-    +OnFireHandle() <<Event>>
-    +OnFireFailedHandle() <<Event>>
+    .. Event Handlers (FX/SFX/Physics) ..
+    +OnFireHandle(ammoComp : BP_AmmoComp, spread : vector3) <<Event>>
+    +OnFireFailedHandle(ammoComp : BP_AmmoComp, spread : vector3) <<Event>>
+
+    +OnReloadStartedHandle() <<Event>>
+    +OnReloadCompletedHandle() <<Event>>
+    +OnReloadProgressHandle(progress : float, reloadTime: float) <<Event>>  
+
+    + OnSpreadChangedHandle(vector3 newSpread) <<Event>>
     
+    ' .. Getter Interfaces ..
+    ' +GetCurrentAmmo() : int
+    ' +GetCurrentAmmoComp() : BP_AmmoComp
+    ' +GetCurrentSpread() : vector3
 
+    .. Delegates for UI ..
+    +OnFire(ammoComp : BP_AmmoComp, spread : vector3) <<Delegate>>
+    +OnHeatChanged(curHeat : float) <<Delegate>>
+    +OnFireFailed(ammoComp : BP_AmmoComp, spread : vector3) <<Delegate>>
 
-    .. Query Interfaces ..
-    +GetCurrentAmmo() : int
-    +GetCurrentSpread() : float
-    +IsCoolingDown() : bool
+    +OnReloadStarted() <<Delegate>>
+    +OnReloadCompleted() <<Delegate>>
+    +OnReloadProgress(progress : float, reloadTime: float) <<Delegate>>  
+
+    +OnSpreadChanged(vector3 newSpread) <<Delegate>>
 }
 
 ' ===========================
@@ -42,11 +59,11 @@ class BP_GenericFireArm <<Actor>> {
 ' ===========================
 class BP_FireComp <<ActorComponent>> {
     ..Public Properties..
-    fireRPM : int
-    burstSize : int
-    overHeat : float
-    heatPerShot : float
-    coolDownRate : float
+    +fireRPM : int
+    +maxHeat : float
+    +heatPerShot : float
+    +heatCooldownRate : float
+    +hold2Fire : bool
 
     .. Private Fields..
     -lastFireTime : float
@@ -54,9 +71,13 @@ class BP_FireComp <<ActorComponent>> {
     .. Call Entrypoints ..
     +Fire(ammoComp : BP_AmmoComp, spreadComp : BP_SpreadComp) : bool
 
+    .. Getter ..
+    + CanFire() : bool
+
     .. Delegates ..
-    +OnFire() <<Delegate>>
-    +OnFireFailed() <<Delegate>>
+    +OnFire(ammoComp : BP_AmmoComp, spread : vector3) <<Delegate>>
+    +OnHeatChanged(curHeat : float) <<Delegate>>
+    +OnFireFailed(ammoComp : BP_AmmoComp, spread : vector3) <<Delegate>>
 }
 
 ' ===========================
@@ -70,11 +91,15 @@ class BP_AmmoComp <<ActorComponent>> {
 
     .. Private Fields..
     - curAmmoInMag : int
-    - isReloading : bool
+    - curNumOfMag : int
 
-    .. Call Entrypoint ..
-    + TryGetAmmo(float amount : int) : int
+    .. Getter (By FireComp) ..
+    + TryGetAmmo(amount : int) : in
     + GetProjectile() : BP_ProjectileBase
+
+    .. Setter (By ReloadComp) ..
+    ' 写入统一由ReloadComp, FireComp只读
+    - isReloading : bool
     + ReloadBegin(): void
     + ReloadComplete(): void
     
@@ -93,11 +118,11 @@ class BP_ProjectileBase <<Actor>> {
     .. Private Fields ..
     -lifeTime : float
 
-    .. Call Entrypoint ..
+    .. Public Methods ..
     + Initialize(direction : vector3) : void
 
-    .. Delegates ..
-    + OnProjectileHit(AActor OtherActor) <<Delegate>>
+    ' .. Delegates ..
+    ' + OnProjectileHit(AActor OtherActor) <<Delegate>>
 }
 
 
@@ -106,19 +131,23 @@ class BP_ProjectileBase <<Actor>> {
 ' ===========================
 class BP_ReloadComp <<ActorComponent>> {
     ..Public Properties..
-    +reloadTime: float
+    + reloadTime: float
 
     .. Private Fields..
-    - isReloading : bool
+    - timePassed : bool
 
     .. Call Entrypoint ..
     + Reload(ammoComp: BP_AmmoComp) : void
-    + isReloading() : bool
+    '开始的时候把ammo设置成isReloading = True 结束后设置成false.
+
+    .. Getter ..
+    + IsReloading() : bool
+    + CanReload(ammoComp: BP_AmmoComp) : bool
     
     .. Delegates ..
     +OnReloadStarted() <<Delegate>>
     +OnReloadCompleted() <<Delegate>>
-    +OnReloadProgress(progress : float, reloadTime: progress) <<Delegate>>  
+    +OnReloadProgress(progress : float, reloadTime: float) <<Delegate>>  
 }
 
 
@@ -137,28 +166,28 @@ class BP_SpreadComp <<ActorComponent>> {
     - curSpread: vector3
     
     .. Call Entrypoint ..
-    +IncreaseSpread(fireCount : int)    
+    +IncreaseSpread(fireCount : int) 
+
+    .. Getter ..   
     +GetCurSpread() : vector3
     
     .. Methods..
     - RecoverSpread(deltaTime:float)
 
     .. Delegates ..
-    +OnSpreadChanged(vector3 newSpread) <<Delegate>>
+    + OnSpreadChanged(vector3 newSpread) <<Delegate>>
 }
 
 ' ===========================
-' RecoilComp（后坐力逻辑）
+' RecoilComp（后坐力逻辑/类似VFX）
 ' ===========================
 class BP_RecoilComp <<ActorComponent>> {
     +recoilShiftDistance : vector3
     +recoilForce : vector3
-    +recoilRecoveryRate : float
-    -currentRecoilOffset : float
+    +recoilRecoveryRate : vector3
+    -currentRecoilOffset : vector3
     .. Entrypoint  ..
-    +ApplyRecoil()
-    .. Delegates ..
-    +OnRecoilApplied(float Strength) <<Delegate>>
+    +ApplyRecoil() : void    
 }
 
 @enduml
