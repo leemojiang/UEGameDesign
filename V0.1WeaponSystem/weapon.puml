@@ -1,0 +1,164 @@
+@startuml
+' skinparam classAttributeIconSize 0
+
+' ===========================
+' 武器 Actor
+' ===========================
+class BP_GenericFireArm <<Actor>> {
+    .. Components (cached references)..
+    -fireComp : BP_FireComp
+    -ammoComp : List<BP_AmmoComp>
+    -spreadComp : BP_SpreadComp
+    -recoilComp : BP_RecoilComp
+
+    .. Weapon State ..
+    ' -bIsReloading : bool
+    ' -currentAmmo : int
+    - curAmmoIndex: int
+
+    .. Initialization ..
+    -InitializeWeapon() : void
+    -CacheComponents() : void
+
+    .. Input Entrypoint ..
+    +Fire() : void
+    +Reload() : void
+    +SwitchAmmoType(index : int) : void
+
+    .. Event Handlers (FX/SFX) ..
+    +OnFireHandle() <<Event>>
+    +OnFireFailedHandle() <<Event>>
+    
+
+
+    .. Query Interfaces ..
+    +GetCurrentAmmo() : int
+    +GetCurrentSpread() : float
+    +IsCoolingDown() : bool
+}
+
+' ===========================
+' FireComp（开火逻辑）
+' ===========================
+class BP_FireComp <<ActorComponent>> {
+    ..Public Properties..
+    fireRPM : int
+    burstSize : int
+    overHeat : float
+    heatPerShot : float
+    coolDownRate : float
+
+    .. Private Fields..
+    -lastFireTime : float
+
+    .. Call Entrypoints ..
+    +Fire(ammoComp : BP_AmmoComp, spreadComp : BP_SpreadComp) : bool
+
+    .. Delegates ..
+    +OnFire() <<Delegate>>
+    +OnFireFailed() <<Delegate>>
+}
+
+' ===========================
+' AmmoComp（弹药逻辑）
+' ===========================
+class BP_AmmoComp <<ActorComponent>> {
+    ..Public Properties..
+    +magSize: int
+    +numOfMag: int
+    +projectile: BP_ProjectileBase
+
+    .. Private Fields..
+    - curAmmoInMag : int
+    - isReloading : bool
+
+    .. Call Entrypoint ..
+    + TryGetAmmo(float amount : int) : int
+    + GetProjectile() : BP_ProjectileBase
+    + ReloadBegin(): void
+    + ReloadComplete(): void
+    
+}
+
+' ===========================
+' BP_ProjectileBase（弹道基类）
+' ===========================
+
+class BP_ProjectileBase <<Actor>> {
+    .. Public Properties ..
+    +velocity : float
+    +maxDamage : float
+    +timeToLive : float
+    
+    .. Private Fields ..
+    -lifeTime : float
+
+    .. Call Entrypoint ..
+    + Initialize(direction : vector3) : void
+
+    .. Delegates ..
+    + OnProjectileHit(AActor OtherActor) <<Delegate>>
+}
+
+
+' ===========================
+' ReloadComp（装弹逻辑）
+' ===========================
+class BP_ReloadComp <<ActorComponent>> {
+    ..Public Properties..
+    +reloadTime: float
+
+    .. Private Fields..
+    - isReloading : bool
+
+    .. Call Entrypoint ..
+    + Reload(ammoComp: BP_AmmoComp) : void
+    + isReloading() : bool
+    
+    .. Delegates ..
+    +OnReloadStarted() <<Delegate>>
+    +OnReloadCompleted() <<Delegate>>
+    +OnReloadProgress(progress : float, reloadTime: progress) <<Delegate>>  
+}
+
+
+
+' ===========================
+' SpreadComp（散布逻辑）
+' ===========================
+class BP_SpreadComp <<ActorComponent>> {
+    ..Public Properties..
+    + baseSpread : vector3
+    + maxSpread : vector3
+    + spreadIncreasePerShot : vector3
+    + spreadRecoveryRate : vector3
+
+    .. Private Fields..
+    - curSpread: vector3
+    
+    .. Call Entrypoint ..
+    +IncreaseSpread(fireCount : int)    
+    +GetCurSpread() : vector3
+    
+    .. Methods..
+    - RecoverSpread(deltaTime:float)
+
+    .. Delegates ..
+    +OnSpreadChanged(vector3 newSpread) <<Delegate>>
+}
+
+' ===========================
+' RecoilComp（后坐力逻辑）
+' ===========================
+class BP_RecoilComp <<ActorComponent>> {
+    +recoilShiftDistance : vector3
+    +recoilForce : vector3
+    +recoilRecoveryRate : float
+    -currentRecoilOffset : float
+    .. Entrypoint  ..
+    +ApplyRecoil()
+    .. Delegates ..
+    +OnRecoilApplied(float Strength) <<Delegate>>
+}
+
+@enduml
