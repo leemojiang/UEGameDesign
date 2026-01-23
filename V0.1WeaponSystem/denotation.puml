@@ -1,0 +1,31 @@
+@startuml
+' !include weapon.puml
+hide members
+hide attributes
+hide methods
+
+frame "Handler/Dispatcher" {
+    class BP_GenericFireArm
+}
+
+frame "Effectors/FX Comps" {
+    class class BP_RecoilComp
+}
+
+frame "Logic & Data Comps"{
+    class BP_FireComp
+    class BP_SpreadComp 
+    class BP_ReloadComp
+    class BP_AmmoComp <<DataComps>>
+
+    BP_FireComp ..> BP_AmmoComp : Consume
+    BP_ReloadComp ..> BP_AmmoComp :Modify
+
+}
+
+note right of BP_RecoilComp
+    Should BP_RecoilComp be effectors? YES.
+end note
+
+
+@enduml

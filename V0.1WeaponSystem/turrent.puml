@@ -1,11 +1,24 @@
 @startuml
 !include interfaces.puml
 
+' ===========================
+' Turrent Actor 同时作为Handler处理Input以及Effector处理表现
+' ===========================
+
 class BP_Turret <<Actor>> {
     .. Private Properties ..
     - turretRotationComp : BP_TurretRotationComp    
     - gunElevationComp : BP_GunElevationComp
+
+    ..  Event Handlers (FX/SFX/Physics) ..
+    -OnRotateTurretHandler(deltaYaw : float) <<Event>>
+    -OnElevateGunHandler(deltaPitch : float) <<Event>>
+
 }
+
+' ===========================
+' 执行Comp所有逻辑都在这里执行
+' ===========================
 
 class BP_TurretRotationComp <<ActorComponent>> {
     ..Public Properties..
@@ -15,6 +28,16 @@ class BP_TurretRotationComp <<ActorComponent>> {
     
     .. Public Methods ..
     + RotateYaw(deltaYaw : float) : void
+    + AimTarget(targetLocation : vector3) : void
+    + AimDirection(targetDirection : vector3) : void
+    + GetCurrentYaw() : float
+
+    .. Delagates ..
+    +OnTurretRotated(newYaw : float) <<Delegate>>
+
+    .. Private Fields ..
+    - isRotating : bool
+    - privateTargetYaw : float
 }
 
 class BP_GunElevationComp <<ActorComponent>> {
@@ -25,6 +48,16 @@ class BP_GunElevationComp <<ActorComponent>> {
     
     .. Public Methods ..
     + RotatePitch(deltaPitch : float) : void
+    + AimTarget(targetLocation : vector3) : void
+    + AimDirection(targetDirection : vector3) : void
+    + GetCurrentPitch() : float
+
+    .. Delagates ..
+    +OnGunElevated(newPitch : float) <<Delegate>>
+
+    .. Private Fields ..
+    - isRotating : bool
+    - privateTargetPitch : float
 }
 
 BP_Turret ..|> ITurret : implements

@@ -5,6 +5,10 @@
 ' 武器 Actor
 ' ===========================
 class BP_GenericFireArm <<Actor>> {
+    .. Public Properties ..
+    + weaponName : string
+    ' + fireAxis : int TODO
+
     .. Components (cached references)..
     -fireComp : BP_FireComp
     -ammoComps : List<BP_AmmoComp>
@@ -12,37 +16,22 @@ class BP_GenericFireArm <<Actor>> {
     -recoilComp : BP_RecoilComp
 
     .. Weapon State ..
-    ' -bIsReloading : bool
-    ' -currentAmmo : int
-    - currentAmmoIndex : intt
+    - currentAmmoIndex : int
 
     .. Initialization ..
     -InitializeWeapon() : void
     -CacheComponents() : void
 
-    ' .. Input Entrypoint from IWeapon ..
-    ' + OnFireButtonDown() : void
-    ' + OnFireButtonRelease() : void
-    ' + OnReloadPressed() : void
-    ' + CanFire() : bool
-    ' + CanReload() : bool
-    ' + OnSwitchAmmoType(index : int) : void
+    .. Event Handlers / Delegates Forwards (FX/SFX/Physics) ..
+    -OnFireHandle(ammoComp : BP_AmmoComp, spread : vector3) <<Event>>
+    -OnFireFailedHandle(ammoComp : BP_AmmoComp, spread : vector3) <<Event>>
 
-    .. Event Handlers (FX/SFX/Physics) ..
-    +OnFireHandle(ammoComp : BP_AmmoComp, spread : vector3) <<Event>>
-    +OnFireFailedHandle(ammoComp : BP_AmmoComp, spread : vector3) <<Event>>
+    -OnReloadStartedHandle() <<Event>>
+    -OnReloadCompletedHandle() <<Event>>
+    -OnReloadProgressHandle(progress : float, reloadTime: float) <<Event>>  
 
-    +OnReloadStartedHandle() <<Event>>
-    +OnReloadCompletedHandle() <<Event>>
-    +OnReloadProgressHandle(progress : float, reloadTime: float) <<Event>>  
-
-    + OnSpreadChangedHandle(vector3 newSpread) <<Event>>
+    -OnSpreadChangedHandle(vector3 newSpread) <<Event>>
     
-    ' .. Getter Interfaces ..
-    ' +GetCurrentAmmo() : int
-    ' +GetCurrentAmmoComp() : BP_AmmoComp
-    ' +GetCurrentSpread() : vector3
-
     .. Delegates for UI ..
     +OnFire(ammoComp : BP_AmmoComp, spread : vector3) <<Delegate>>
     +OnHeatChanged(curHeat : float) <<Delegate>>
@@ -53,6 +42,9 @@ class BP_GenericFireArm <<Actor>> {
     +OnReloadProgress(progress : float, reloadTime: float) <<Delegate>>  
 
     +OnSpreadChanged(vector3 newSpread) <<Delegate>>
+
+    .. Facade API ..
+    TODO
 }
 
 BP_GenericFireArm ..|> IWeapon : implements
@@ -188,15 +180,15 @@ class BP_SpreadComp <<ActorComponent>> {
 }
 
 ' ===========================
-' RecoilComp（后坐力逻辑/类似VFX）
+' RecoilComp（后坐力逻辑/类似VFX）TODO
 ' ===========================
-class BP_RecoilComp <<ActorComponent>> {
-    +recoilShiftDistance : vector3
-    +recoilForce : vector3
-    +recoilRecoveryRate : vector3
-    -currentRecoilOffset : vector3
-    .. Entrypoint  ..
-    +ApplyRecoil() : void    
-}
+' class BP_RecoilComp <<ActorComponent>> {
+'     +recoilShiftDistance : vector3
+'     +recoilForce : vector3
+'     +recoilRecoveryRate : vector3
+'     -currentRecoilOffset : vector3
+'     .. Entrypoint  ..
+'     +ApplyRecoil() : void    
+' }
 
 @enduml
