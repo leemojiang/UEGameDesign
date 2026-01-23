@@ -1,0 +1,20 @@
+@startuml
+' ===========================
+' Weapon UI Interface (Bind BP_GenericFireArm Events)
+' ===========================
+interface IWeaponHUD{
+    +OnFireHandle(ammoComp : BP_AmmoComp, spread : vector3) void
+    +OnHeatChangedHandle(curHeat : float) void
+    +OnFireFailedHandle(ammoComp : BP_AmmoComp, spread : vector3) void
+
+    +OnReloadStartedHandle() void
+    +OnReloadCompletedHandle() void
+    +OnReloadProgressHandle(progress : float, reloadTime: float) void  
+
+    +OnSpreadChangedHandle(vector3 newSpread) void
+
+    +UnbindAllWeaponEvents() void
+}
+
+
+@enduml

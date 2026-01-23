@@ -1,0 +1,26 @@
+@startuml
+!include interface.puml
+
+class WBP_WeaponHUD <<WidgetBlueprint>> {
+    .. UI Elements ..
+    ' -AmmoText : TextBlock
+    ' -HeatBar : ProgressBar
+    ' -SpreadIndicator : Image
+    ' -ReloadProgressBar : ProgressBar
+
+    .. Bindings ..
+
+    .. UI Update Methods ..
+    ' -UpdateAmmo(ammoComp : BP_AmmoComp)
+    ' -UpdateHeat(curHeat : float)
+    ' -UpdateSpread(newSpread : vector3)
+    ' -ShowReloadProgress(progress : float)
+    ' -HideReloadProgress()
+}
+
+IWeaponHUD <|.. WBP_WeaponHUD
+
+@enduml
+
+
+@enduml
