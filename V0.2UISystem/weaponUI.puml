@@ -10,7 +10,7 @@ class WBP_WeaponHUD <<WidgetBlueprint>> {
 
     .. Bindings ..
 
-    .. UI Update Methods ..
+    .. UI Update Methods (Internal Update Methods) ..
     ' -UpdateAmmo(ammoComp : BP_AmmoComp)
     ' -UpdateHeat(curHeat : float)
     ' -UpdateSpread(newSpread : vector3)
@@ -19,8 +19,5 @@ class WBP_WeaponHUD <<WidgetBlueprint>> {
 }
 
 IWeaponHUD <|.. WBP_WeaponHUD
-
-@enduml
-
 
 @enduml

@@ -1,0 +1,13 @@
+@startuml
+
+interface IPlayerControllableObject{
+    + OnEnter() void
+    + OnExit() void
+    + SwitchPosition() void
+    
+    + GetChildPosition() TArray<IPlayerControlObject>
+
+}
+
+
+@enduml

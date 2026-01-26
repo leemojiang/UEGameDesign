@@ -1,0 +1,226 @@
+@startuml
+' !include ../V0.2UISystem/interface.puml
+class AChaosWheeledVehiclePawn {
+    +GetVehicleMovementComponent() : UChaosWheeledVehicleMovementComponent*
+    +GetMesh() : USkeletalMeshComponent*
+    + GetNavAgentLocation() : FVector
+}
+
+' =============================
+' 移动的配置类
+' =============================
+
+class UChaosWheeledVehicleMovementComponent {
+    -- Runtime Control (private) --
+    - ThrottleInput : float
+    - SteeringInput : float
+    - BrakeInput : float
+    - HandbrakeInput : bool
+
+    -- Vehicle State (private) --
+    - ForwardSpeed : float
+    - EngineRotationSpeed : float
+    - EngineMaxRotationSpeed : float
+    - CurrentGear : int
+
+    -- Configuration Properties (public) --
+    + MaxEngineRPM : float
+    + EngineIdleRPM : float
+    + GearSwitchTime : float
+    + AutomaticGears : bool
+    + UseAutoReverse : bool
+    + FinalDriveRatio : float
+    + DifferentialType : EVehicleDifferential4W::Type
+    + TorqueCurve : FRuntimeFloatCurve
+    + SteeringCurve : FRuntimeFloatCurve
+    + WheelSetups : TArray<FWheelSetup>
+    + DragCoefficient : float
+    + ChassisWidth : float
+    + ChassisHeight : float
+    + InertiaTensorScale : FVector
+    + Mass : float
+    + IdleBrakeInput : float
+    + StopThreshold : float
+    + WrongDirectionThreshold : float
+    + bReverseAsBrake : bool
+    + bUseRVOAvoidance : bool
+    + AvoidanceGroup : FNavAvoidanceMask
+    + GroupsToAvoid : FNavAvoidanceMask
+    + GroupsToIgnore : FNavAvoidanceMask
+
+    -- Public Methods --
+    -- Control Inputs --
+    + SetThrottleInput(Value : float) : void
+    + SetSteeringInput(Value : float) : void
+    + SetBrakeInput(Value : float) : void
+    + SetHandbrakeInput(bNewHandbrake : bool) : void
+
+    + SetUseAutomaticGears(bUseAuto : bool) : void
+    + SetTargetGear(GearNum : int, bImmediate : bool) : void
+    
+    -- AI Control API --
+    + RequestDirectMove(MoveVelocity : FVector, bForceMaxSpeed : bool) : void
+    + StopActiveMovement() : void
+    + CanStartPathFollowing() : bool
+    + CanStopPathFollowing() : bool
+
+    -- State Queries --
+    + GetForwardSpeed() : float
+    + GetEngineRotationSpeed() : float
+    + GetEngineMaxRotationSpeed() : float
+    + GetCurrentGear() : int
+    + GetWheelStates() : TArray<FWheelStatus>
+
+    -- AI Configuration --
+    + SetAvoidanceGroup(Mask : int32) : void
+    + SetGroupsToAvoid(Mask : int32) : void
+    + SetGroupsToIgnore(Mask : int32) : void
+}
+
+' =============================
+' 轮子的配置类 还需要传入一个行为类 UChaosVehicleWheel 来规定轮子的运行效果 比如是否接地 旋转等
+' =============================
+class FWheelSetup {
+    -- Configuration Properties --
+    + WheelClass : TSubclassOf<UChaosVehicleWheel>
+    + BoneName : FName
+    + AdditionalOffset : FVector
+    + bDisableSteering : bool
+    + bIsDriven : bool
+}
+
+class UChaosVehicleWheel {
+    -- Configuration Properties --
+    + WheelRadius : float
+    + WheelWidth : float
+    + SuspensionMaxRaise : float
+    + SuspensionMaxDrop : float
+    + SuspensionStiffness : float
+    + SuspensionDampingRatio : float
+    + SuspensionForceOffset : float
+    + bAffectedBySuspension : bool
+    + bIsSteeringWheel : bool
+    + bIsDriven : bool
+    + bUseContactShape : bool
+    + LatStiffMaxLoad : float
+    + LatStiffValue : float
+    + LongStiffValue : float
+    + FrictionMultiplier : float
+    + WheelLoadRatio : float
+    + MaxBrakeTorque : float
+    + MaxHandBrakeTorque : float
+
+    -- Runtime State (Read-only) --
+    - Location : FVector
+    - Rotation : FQuat
+    - AngularVelocity : float
+    - SuspensionOffset : float
+    - bIsInAir : bool
+
+    -- Overridable Methods --
+    # GetShapeRadius() : float
+    # GetShapeWidth() : float
+    # GetSuspensionOffset() : float
+}
+
+' =============================
+' 轮子的配置类 还需要传入一个行为类 UChaosVehicleWheel 来规定轮子的运行效果 比如是否接地 旋转等
+' =============================
+class ATankPawnBase: <<AChaosWheeledVehiclePawn>>  {
+    -- Components --
+    - VehicleMovementComponent : UChaosWheeledVehicleMovementComponent*
+    - VehicleCameraManager : UCameraManagerComponent*
+
+    
+    -- Child Objects --
+    -SpringArm : USpringArmComponent*
+    -MainCamera : UCameraComponent*
+    -Turret : ITurrent*
+    -PrimaryGFAs: IWeapon*
+    -SecondaryGFA: IWeapon*
+
+    -- FX & SFX --
+    -EngineIdleSound : UAudioComponent*
+    -EngineStartSound: UAudioComponent*
+
+    -- Input Handlers & Getters (See Interface)--
+
+    -- FX / SFX APIs --
+    + PlayEngineStartSound() : void
+    + PlayEngineSound() : void
+    + ApplyImpactEffect(ImpactPoint : FVector, ImpactNormal : FVector) : void
+
+    -- Delegates --
+    + OnEngineStarted() <<Delegate>>
+    + OnCameraViewSwitched() <<Delegate>>
+    + OnCameraIndexChanged(NewIndex : int) <<Delegate>>
+}
+
+interface IVehicle {
+    -- Movement --
+    + SetThrottleInput(Value : float) : void
+    + SetSteeringInput(Value : float) : void
+
+    -- Hand Control --
+    + SetBrakeInput(Value : float) : void
+    + SetHandbrakeInput(bNewHandbrake : bool) : void
+    + SetUseAutomaticGears(bUseAuto : bool) : void
+    + SetTargetGear(GearNum : int, bImmediate : bool) : void
+
+    -- Fire Arm --
+    + FirePrimary() : void
+    + FireSecondary() : void
+    + SwitchPrimaryWeapon(WeaponIndex : int) : void
+    + SwitchPrimaryAmmo(AmmoIndex : int) : void
+
+    -- View --
+    + ZoomIn() : void
+    + ZoomOut() : void
+    + SwitchCameraView() : void
+    + SetCameraViewIndex(NewIndex : int) : void
+
+    -- Getters --
+    + GetCurrentSpeed() : float
+    + GetCurrentGear() : int
+    + IsBraking() : bool
+    + GetEngineRPM() : float
+    + GetPrimaryWeapon() : BP_GenericFireArm*
+    + GetSecondaryWeapon() : BP_GenericFireArm*
+
+}
+
+interface IVehicleAI{
+    -- AI --
+    TODO
+}
+
+ATankPawnBase ..|> ITankInputInterface : implements
+AChaosWheeledVehiclePawn <|-- ATankPawnBase
+
+' =============================
+' 输入组件 绑定到Controller上面 或者Pawn上面
+' 绑定 IMC(Input Mapping Context)
+' 注册输入事件(MoveForward、TurnRight、Fire 等)
+' 调用 ITankInputInterface 或直接控制 Pawn 的移动组件
+' =============================
+class UVehicleInputComponent <<UEnhancedInputComponent >>{
+    - veichle: IVehicle*
+}
+
+' =============================
+' 履带特效用组件实现 FXComponent
+' =============================
+class UTankTrackComponent{
+    TODO
+}
+
+' =============================
+' 相机控制 CameraManagementComponent
+' =============================
+class UCameraManagerComponent{
+    TODO
+}
+
+
+
+@enduml
