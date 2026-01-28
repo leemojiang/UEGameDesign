@@ -1,0 +1,20 @@
+@startuml
+' ===========================
+' 武器 Interface (InputHandler)
+' ===========================
+interface IWeapon{
+    .. Input Events ..
+    + OnFireButtonDown() : void
+    + OnFireButtonRelease() : void
+    + OnReloadPressed() : void
+    + OnSwitchAmmoType(index : int) : void
+    .. Query ..
+    + CanFire() : bool
+    + CanReload() : bool
+}
+
+interface IEquipable{
+    + OnEquip() : void
+    + OnUnEquip() : void
+}
+@enduml

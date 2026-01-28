@@ -1,5 +1,4 @@
 @startuml
-' !include weapon.puml
 hide members
 hide attributes
 hide methods
