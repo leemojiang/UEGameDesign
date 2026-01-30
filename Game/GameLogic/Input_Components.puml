@@ -1,0 +1,15 @@
+@startuml
+
+
+class VeichleInputComponent{
+    .. Private fields ..
+    - actor : IVehicle  : Init at BeginPlay
+
+    .. Input Handler function ..
+    IA_Move(axisValue: vec2) : void
+    IA_Brake(boolValue: bool) : void
+}
+
+
+
+@enduml

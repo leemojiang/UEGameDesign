@@ -1,0 +1,15 @@
+@startuml
+
+' =============================
+' ' Controller 负责事项
+' =============================
+
+class Controller {
+    .. Internal Methods ..
+    - SetIMC() : Call at BeginPlay
+    - SetHUD()
+}
+
+
+
+@enduml
