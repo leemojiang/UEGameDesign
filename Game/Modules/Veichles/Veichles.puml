@@ -126,7 +126,7 @@ class UChaosVehicleWheel {
 ' =============================
 ' 轮子的配置类 还需要传入一个行为类 UChaosVehicleWheel 来规定轮子的运行效果 比如是否接地 旋转等
 ' =============================
-class ATankPawnBase: <<AChaosWheeledVehiclePawn>>  {
+class BP_VeichlePawnBase: <<AChaosWheeledVehiclePawn>>  {
     -- Components --
     - VehicleMovementComponent : UChaosWheeledVehicleMovementComponent*
     - VehicleCameraManager : UCameraManagerComponent*
@@ -156,46 +156,10 @@ class ATankPawnBase: <<AChaosWheeledVehiclePawn>>  {
     + OnCameraIndexChanged(NewIndex : int) <<Delegate>>
 }
 
-interface IVehicle {
-    -- Movement --
-    + SetThrottleInput(Value : float) : void
-    + SetSteeringInput(Value : float) : void
 
-    -- Hand Control --
-    + SetBrakeInput(Value : float) : void
-    + SetHandbrakeInput(bNewHandbrake : bool) : void
-    + SetUseAutomaticGears(bUseAuto : bool) : void
-    + SetTargetGear(GearNum : int, bImmediate : bool) : void
 
-    -- Fire Arm --
-    + FirePrimary() : void
-    + FireSecondary() : void
-    + SwitchPrimaryWeapon(WeaponIndex : int) : void
-    + SwitchPrimaryAmmo(AmmoIndex : int) : void
-
-    -- View --
-    + ZoomIn() : void
-    + ZoomOut() : void
-    + SwitchCameraView() : void
-    + SetCameraViewIndex(NewIndex : int) : void
-
-    -- Getters --
-    + GetCurrentSpeed() : float
-    + GetCurrentGear() : int
-    + IsBraking() : bool
-    + GetEngineRPM() : float
-    + GetPrimaryWeapon() : BP_GenericFireArm*
-    + GetSecondaryWeapon() : BP_GenericFireArm*
-
-}
-
-interface IVehicleAI{
-    -- AI --
-    TODO
-}
-
-ATankPawnBase ..|> ITankInputInterface : implements
-AChaosWheeledVehiclePawn <|-- ATankPawnBase
+BP_VeichlePawnBase ..|> ITankInputInterface : implements
+AChaosWheeledVehiclePawn <|-- BP_VeichlePawnBase
 
 ' =============================
 ' 输入组件 绑定到Controller上面 或者Pawn上面

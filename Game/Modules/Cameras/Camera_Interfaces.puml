@@ -1,0 +1,51 @@
+@startuml
+
+
+' ===========================
+'  Camera Control Interface
+' ===========================
+
+interface ICamera {
+    -- Input Handler --
+    + OnCameraLookUp(value : float) void
+    + OnCameraLookRight(value : float) void
+    + OnCameraZoomIn(value : float) void
+
+    ' ' --- 获取摄像机组件 ---
+    ' + GetCameraComponent() : CameraComponent
+
+    ' ' --- 获取摄像机空间信息 ---
+    ' + GetCameraLocation() : Vector
+    ' + GetCameraRotation() : Rotator
+    ' + GetCameraForwardVector() : Vector
+    ' + GetCameraRightVector() : Vector
+
+    ' ' --- 摄像机模式控制 ---
+    ' + SetCameraMode(mode : ECameraMode)
+    ' + ResetCamera()
+
+    ' ' --- 摄像机参数控制 ---
+    ' + SetCameraFOV(fov : float)
+    ' + AddCameraOffset(offset : Vector)
+
+    ' ' --- 摄像机旋转控制（上下看 / 左右看） ---
+    ' + LookUp(value : float)        ' 上下看
+    ' + LookRight(value : float)     ' 左右看
+    ' + AddCameraRotation(delta : Rotator)
+
+    ' ' --- 摄像机效果 ---
+    ' + ShakeCamera(intensity : float, duration : float)
+
+    ' ' --- 状态查询 ---
+    ' + IsCameraFreeLookEnabled() : bool
+}
+
+' 摄像机模式枚举
+' enum ECameraMode {
+'     FirstPerson
+'     ThirdPerson
+'     FreeLook
+'     VehicleInterior
+' }
+
+@enduml
