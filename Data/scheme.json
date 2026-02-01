@@ -1,0 +1,188 @@
+{
+  "type": "object",
+  "properties": {
+    "Object": {
+      "type": "object",
+      "required": ["class"],
+      "properties": {
+        "class": {
+          "type": "string",
+          "description": "Unreal class name, e.g., BP_Tank"
+        },
+        "name": {
+          "type": "string",
+          "description": "Optional object name"
+        },
+        "tags": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "meta": {
+          "type": "object",
+          "description": "Optional metadata for tooling",
+          "additionalProperties": true
+        },
+
+        "transform": {
+          "type": "object",
+          "properties": {
+            "location": {
+              "type": "array",
+              "items": { "type": "number" },
+              "minItems": 3,
+              "maxItems": 3
+            },
+            "rotation": {
+              "type": "array",
+              "items": { "type": "number" },
+              "minItems": 3,
+              "maxItems": 3
+            },
+            "scale": {
+              "type": "array",
+              "items": { "type": "number" },
+              "minItems": 3,
+              "maxItems": 3
+            }
+          },
+          "additionalProperties": false
+        },
+
+        "properties": {
+          "type": "object",
+          "description": "Blueprint-exposed or C++ UPROPERTY values",
+          "additionalProperties": true
+        },
+
+        "components": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/component" }
+        },
+
+        "children": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "Object": { "$ref": "#/definitions/object" }
+            },
+            "required": ["Object"],
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+
+  "definitions": {
+    "object": {
+      "type": "object",
+      "required": ["class"],
+      "properties": {
+        "class": { "type": "string" },
+        "name": { "type": "string" },
+        "tags": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "meta": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "transform": {
+          "type": "object",
+          "properties": {
+            "location": {
+              "type": "array",
+              "items": { "type": "number" },
+              "minItems": 3,
+              "maxItems": 3
+            },
+            "rotation": {
+              "type": "array",
+              "items": { "type": "number" },
+              "minItems": 3,
+              "maxItems": 3
+            },
+            "scale": {
+              "type": "array",
+              "items": { "type": "number" },
+              "minItems": 3,
+              "maxItems": 3
+            }
+          },
+          "additionalProperties": false
+        },
+        "properties": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "components": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/component" }
+        },
+        "children": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "Object": { "$ref": "#/definitions/object" }
+            },
+            "required": ["Object"],
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+
+    "component": {
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "Component class, e.g., StaticMeshComponent"
+        },
+        "name": {
+          "type": "string",
+          "description": "Optional component name"
+        },
+        "attach_to": {
+          "type": "string",
+          "description": "Name of component to attach to (default RootComponent)"
+        },
+        "transform": {
+          "type": "object",
+          "properties": {
+            "location": {
+              "type": "array",
+              "items": { "type": "number" },
+              "minItems": 3,
+              "maxItems": 3
+            },
+            "rotation": {
+              "type": "array",
+              "items": { "type": "number" },
+              "minItems": 3,
+              "maxItems": 3
+            },
+            "scale": {
+              "type": "array",
+              "items": { "type": "number" },
+              "minItems": 3,
+              "maxItems": 3
+            }
+          },
+          "additionalProperties": false
+        },
+        "properties": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

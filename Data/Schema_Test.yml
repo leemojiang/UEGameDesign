@@ -1,0 +1,16 @@
+Object:
+  class: BP_Tank
+  name: Tank_01
+
+  transform:
+    location: [0, 0, 100]
+
+  abc: 1
+
+  properties:
+    MaxHealth: 300
+    Team: "Blue"
+
+  components:
+    - type: ChaosVehicleMovementComponent
+      name: VehicleMovement
