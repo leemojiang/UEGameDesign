@@ -7,20 +7,11 @@
       "properties": {
         "class": {
           "type": "string",
-          "description": "Unreal class name, e.g., BP_Tank"
+          "description": "Actor class name, e.g., BP_Tank"
         },
         "name": {
           "type": "string",
-          "description": "Optional object name"
-        },
-        "tags": {
-          "type": "array",
-          "items": { "type": "string" }
-        },
-        "meta": {
-          "type": "object",
-          "description": "Optional metadata for tooling",
-          "additionalProperties": true
+          "description": "Optional actor name"
         },
 
         "transform": {
@@ -50,25 +41,30 @@
 
         "properties": {
           "type": "object",
-          "description": "Blueprint-exposed or C++ UPROPERTY values",
+          "description": "Actor-level Blueprint/C++ properties",
           "additionalProperties": true
-        },
-
-        "components": {
-          "type": "array",
-          "items": { "$ref": "#/definitions/component" }
         },
 
         "children": {
           "type": "array",
-          "items": {
-            "type": "object",
-            "properties": {
-              "Object": { "$ref": "#/definitions/object" }
-            },
-            "required": ["Object"],
-            "additionalProperties": false
-          }
+          "description": "SceneComponent or ChildActor (scene tree nodes)",
+          "items": { "$ref": "#/definitions/sceneNode" }
+        },
+
+        "components": {
+          "type": "array",
+          "description": "NonSceneComponent list",
+          "items": { "$ref": "#/definitions/nonSceneComponent" }
+        },
+
+        "tags": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+
+        "meta": {
+          "type": "object",
+          "additionalProperties": true
         }
       },
       "additionalProperties": false
@@ -76,19 +72,21 @@
   },
 
   "definitions": {
-    "object": {
+    "sceneNode": {
       "type": "object",
-      "required": ["class"],
+      "required": ["type", "name"],
       "properties": {
-        "class": { "type": "string" },
-        "name": { "type": "string" },
-        "tags": {
-          "type": "array",
-          "items": { "type": "string" }
+        "type": {
+          "type": "string",
+          "description": "SceneComponent class (StaticMeshComponent, CameraComponent, etc.)"
         },
-        "meta": {
-          "type": "object",
-          "additionalProperties": true
+        "name": {
+          "type": "string",
+          "description": "Component name"
+        },
+        "attach_to": {
+          "type": "string",
+          "description": "Parent SceneComponent name (default Root)"
         },
         "transform": {
           "type": "object",
@@ -118,64 +116,48 @@
           "type": "object",
           "additionalProperties": true
         },
-        "components": {
-          "type": "array",
-          "items": { "$ref": "#/definitions/component" }
-        },
+
         "children": {
           "type": "array",
-          "items": {
-            "type": "object",
+          "description": "Nested SceneComponents",
+          "items": { "$ref": "#/definitions/sceneNode" }
+        },
+
+        "child_actor": {
+          "type": "object",
+          "description": "If this SceneComponent is a ChildActorComponent",
+          "required": ["class"],
+          "properties": {
+            "class": { "type": "string" },
             "properties": {
-              "Object": { "$ref": "#/definitions/object" }
+              "type": "object",
+              "additionalProperties": true
             },
-            "required": ["Object"],
-            "additionalProperties": false
-          }
+            "children": {
+              "type": "array",
+              "items": { "$ref": "#/definitions/sceneNode" }
+            },
+            "components": {
+              "type": "array",
+              "items": { "$ref": "#/definitions/nonSceneComponent" }
+            }
+          },
+          "additionalProperties": false
         }
       },
       "additionalProperties": false
     },
 
-    "component": {
+    "nonSceneComponent": {
       "type": "object",
-      "required": ["type"],
+      "required": ["type", "name"],
       "properties": {
         "type": {
           "type": "string",
-          "description": "Component class, e.g., StaticMeshComponent"
+          "description": "NonSceneComponent class (MovementComponent, VehicleMovement, etc.)"
         },
         "name": {
-          "type": "string",
-          "description": "Optional component name"
-        },
-        "attach_to": {
-          "type": "string",
-          "description": "Name of component to attach to (default RootComponent)"
-        },
-        "transform": {
-          "type": "object",
-          "properties": {
-            "location": {
-              "type": "array",
-              "items": { "type": "number" },
-              "minItems": 3,
-              "maxItems": 3
-            },
-            "rotation": {
-              "type": "array",
-              "items": { "type": "number" },
-              "minItems": 3,
-              "maxItems": 3
-            },
-            "scale": {
-              "type": "array",
-              "items": { "type": "number" },
-              "minItems": 3,
-              "maxItems": 3
-            }
-          },
-          "additionalProperties": false
+          "type": "string"
         },
         "properties": {
           "type": "object",

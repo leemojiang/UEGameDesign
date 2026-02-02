@@ -2,15 +2,17 @@ Object:
   class: BP_Tank
   name: Tank_01
 
-  transform:
-    location: [0, 0, 100]
-
-  abc: 1
-
   properties:
     MaxHealth: 300
     Team: "Blue"
 
   components:
-    - type: ChaosVehicleMovementComponent
+    - type: ChaosWheeledVehicleMovementComponent
       name: VehicleMovement
+      properties: 
+        MaxEngineRPM: 6000 
+        MaxSteeringAngle: 35 
+        DragCoefficient: 0.3
+
+    - type: SkeletalMeshComponent
+      name: TankBodyMesh

@@ -1,0 +1,4 @@
+PythonEnv/.venv
+PythonEnv/uv.lock
+
+*.pyc
