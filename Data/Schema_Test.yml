@@ -1,3 +1,4 @@
+---
 Object:
   class: BP_Tank
   name: Tank_01
@@ -13,6 +14,12 @@ Object:
         MaxEngineRPM: 6000 
         MaxSteeringAngle: 35 
         DragCoefficient: 0.3
+        EngineSetup:
+          class: EngineSetup
+          MaxPower: 123
+          MinPower: 231
 
-    - type: SkeletalMeshComponent
-      name: TankBodyMesh
+---
+Object:
+  class: Test2
+  name: TANK_Part

@@ -15,15 +15,16 @@ class Validator:
         with open(path, "r", encoding="utf-8") as f:
             return json.load(f)
 
-    def load_yaml(self, path: str) -> dict:
-        """加载 YAML 文件"""
+    def load_yaml(self, path: str) -> list:
+        """加载 YAML 文件，支持流式加载多个文档"""
         with open(path, "r", encoding="utf-8") as f:
-            return yaml.safe_load(f)
+            return list(yaml.safe_load_all(f))
 
-    def validate(self, yaml_data: dict) -> bool:
+    def validate(self, yaml_data: list) -> bool:
         """校验 YAML 数据，返回 True/False"""
         try:
-            validate(instance=yaml_data, schema=self.schema)
+            for doc in yaml_data:
+                validate(instance=doc, schema=self.schema)
             print("YAML 校验成功！")
             return True
         except ValidationError as e:
