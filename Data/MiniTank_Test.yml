@@ -6,9 +6,9 @@ Object:
     - type: ChaosWheeledVehicleMovementComponent
       name: VehicleMovementComponent
       properties: 
+        DragCoefficient: 0.55
         EngineSetup:
           MaxRPM: 7900 
-        DragCoefficient: 0.55
 
     - type: ChaosWheeledVehicleMovementComponent
       name: ChaosWheeledVeichleMovement2

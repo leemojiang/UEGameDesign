@@ -30,16 +30,6 @@ from dsl.builder.blueprint_builder import BlueprintBuilder
 
 # endregion
 
-def run_builder_test(yaml_path:str,):
-
-
-    # blueprint = builder.create_blueprint_from_model(actor_model, asset_path)
-    # print(f"Blueprint '{blueprint.get_name()}' 构建完成。")
-
-    builder.tweak_blueprint_from_model(actor_model, asset_path)
-    print(f"Blueprint '{asset_path}' 调整完成。")
-
-
 if __name__ == "__main__":
     # a = unreal.load_object(None,"/Game/Game/Core/Veichles/BP_VeichlePawnBase.BP_VeichlePawnBase_C")
     # print(a)
@@ -72,8 +62,11 @@ if __name__ == "__main__":
         print(f"Blueprint '{blueprint.get_name()}' 构建完成。")
 
         # Print all components
-        # bp_asset = unreal.load_object(None,asset_path)
+        bp_asset = unreal.load_object(None,asset_path)
         # builder.comp_builder.print_components_info(bp_asset)
+        num = builder.comp_builder.delete_all_components(bp_asset)
+        print(f"Successfully Delete {num} comps.")
+
 
         builder.tweak_blueprint_from_model(actor_model, asset_path)
         print(f"Blueprint '{asset_path}' 调整完成。")

@@ -45,6 +45,22 @@ class ComponentBuilder:
 
         obj: unreal.Object = self._get_component_object(sub_handle, blueprint)
         return sub_handle, obj
+    
+    def delete_component_for_handle(self,comp_handle:unreal.SubobjectDataHandle, blueprint: unreal.Blueprint) -> int:
+        '''
+            return: success delete number
+        '''
+        if self.BFL.is_handle_valid(comp_handle):
+            subdata = self.BFL.get_data(comp_handle)
+            if not self.BFL.can_delete(subdata):
+                return 0
+            else:
+                owning_handle = self.get_actor_root_handle(blueprint)
+                return self.SDS.delete_subobject(owning_handle, comp_handle, bp_context=blueprint)
+    def delete_all_components(self,blueprint: unreal.Blueprint) -> int:
+        owning_handle = self.get_actor_root_handle(blueprint)
+        handles = self._get_subobject_handles(blueprint)
+        return self.SDS.delete_subobjects(owning_handle, handles, bp_context=blueprint)
 
     def get_component(
         self,
