@@ -1,27 +1,66 @@
 # dsl/builder/ue_reflection.py
 import unreal
 
-# def get_default_components(class_path: str) -> dict:
-#     """
-#     返回蓝图类默认组件的字典 {component_name: component_object}
-#     """
+def set_nested_property(obj, path, value):
+    # set_nested_property(movement, "EngineSetup.MaxRPM", 8000)
+    parts = path.split(".")
+    target = obj
 
-#     # 使用 load_blueprint_class，而不是 load_object
-#     # cls = unreal.load_object(None, class_path)
-#     cls = unreal.EditorAssetLibrary.load_blueprint_class(class_path)
-#     if cls is None:
-#         raise ValueError(f"无法加载 BlueprintGeneratedClass: {class_path}")
+    for p in parts[:-1]:
+        target = target.get_editor_property(p)
 
-#     cdo = cls.get_default_object() #就改了这句
-#     print(f"cdo      = {cdo}, type = {type(cdo)}")
+    target.set_editor_property(parts[-1], value)
+    
+def apply_properties(obj, props: dict , ignore_keys = []):
+    # movement = cdo.get_component_by_class(unreal.ChaosWheeledVehicleMovementComponent)
+    # engine = {"EngineSetup":{"MaxRPM":8000}}
+    # apply_properties(movement,engine)
+    for key, value in props.items():
+        if isinstance(value, dict):
+            sub = obj.get_editor_property(key)
+            apply_properties(sub, value)
+            obj.set_editor_property(key, sub)
+        else:
+            
+            try:
+                obj.set_editor_property(key, value)
+                print(f"Set {key} : {value} for {obj}")
+            except Exception as e:
+                unreal.log_warning(f"[Actor属性失败] {key}={value}, 错误: {e}")
 
-#     comps = cdo.get_components_by_class(unreal.ActorComponent)
+def get_unreal_class(class_name: str): 
+    """ 动态获取 Unreal 类型
+    Example: 
+        Input: “ChaosWheeledVehicleMovementComponent”
+        Return: unreal.ChaosWheeledVehicleMovementComponent
+    Or load Blueprint Class with path.
+        Input:  "/Game/BP_TestActor"
+        Return: unreal.load_class("/Game/BP_TestActor.BP_TestActor_C") #Type BlueprintGeneratedClass
+    # clsa = get_unreal_class('ChaosWheeledVehicleMovementComponent')
+    # clsb = get_unreal_class('/Game/Game/Generated/BP_TestActor')
+    
+    # # If callable
+    # cls = unreal.ChaosWheeledVehicleMovementComponent
+    # obj = cls()
+    # print(obj)
 
-#     return {c.get_name(): c for c in comps}
 
-import unreal
+    """
+    # if type_path.startswith("unreal."): 
+    #     try: 
+    #         return eval(type_path) 
+    #     except Exception: 
+    #         pass
+    if "/" in class_name:
+        return unreal.EditorAssetLibrary.load_blueprint_class(class_name)
 
-def get_default_components(class_path: str) -> dict:
+    # 2. 尝试从 unreal 模块直接 getattr 
+    if hasattr(unreal, class_name): 
+        return getattr(unreal, class_name)
+    
+    raise Exception(f"No {class_name} in unreal.")
+
+def get_cdo_components(class_path: str) -> dict:
     """
     传入蓝图“类路径”或“资产路径”都可以，比如：
     /Game/Game/Generated/BP_TestActor
