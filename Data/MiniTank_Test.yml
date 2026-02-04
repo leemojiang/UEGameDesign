@@ -1,10 +1,17 @@
 Object:
-  class: /Game/Game/Core/Veichles/BP_VeichlePawnBase.BP_VeichlePawnBase_C
+  class: /Game/Game/Core/Veichles/BP_VeichlePawnBase
   name: BP_MiniTank_Test
 
   components:
     - type: ChaosWheeledVehicleMovementComponent
-      name: VehicleMovementComp
+      name: VehicleMovementComponent
+      properties: 
+        EngineSetup:
+          MaxRPM: 7900 
+        DragCoefficient: 0.55
+
+    - type: ChaosWheeledVehicleMovementComponent
+      name: ChaosWheeledVeichleMovement2
       properties: 
         MaxRPM: 6500 
         MaxSteeringAngle: 30 

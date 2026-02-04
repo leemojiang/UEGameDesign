@@ -1,26 +1,32 @@
 import unreal
 from dsl.builder.component_builder import ComponentBuilder
 from dsl.models.actor_model import ActorModel
+from dsl.builder.ue_reflection import get_unreal_class , apply_properties
 
 
 class BlueprintBuilder:
+    def __init__(self):
+        self.comp_builder = ComponentBuilder()
 
-    def asset_exists(self,asset_path: str) -> bool: 
+    def asset_exists(self, asset_path: str) -> bool:
         return unreal.EditorAssetLibrary.does_asset_exist(asset_path)
 
-    def create_blueprint_from_model(self, model: ActorModel, new_asset_path: str):
+    def create_blueprint_from_model(self, model: ActorModel, new_asset_path: str ,overwrite=False):
         if self.asset_exists(new_asset_path):
-            raise FileExistsError(f"资产已存在: {new_asset_path}")
+            if not overwrite:
+                # raise FileExistsError(f"资产已存在: {new_asset_path}")
+                print(f"资产已存在: {new_asset_path}")
+                return unreal.load_object(None,new_asset_path)
 
         asset_tools = unreal.AssetToolsHelpers.get_asset_tools()
         factory = unreal.BlueprintFactory()
 
         # 自动补 _C
         parent_path = model.class_name
-        if not parent_path.endswith("_C"):
-            parent_path += "_C"
+        # if not parent_path.endswith("_C"):
+        #     parent_path += "_C"
 
-        parent_class = unreal.load_object(None, parent_path)
+        parent_class = get_unreal_class(parent_path)
         if parent_class is None:
             raise ValueError(f"无法加载父类蓝图: {parent_path}")
 
@@ -30,53 +36,54 @@ class BlueprintBuilder:
             asset_name=new_asset_path.split("/")[-1],
             package_path="/".join(new_asset_path.split("/")[:-1]),
             asset_class=unreal.Blueprint,
-            factory=factory
+            factory=factory,
         )
 
         if blueprint is None:
             raise RuntimeError(f"蓝图创建失败: {new_asset_path}")
 
         unreal.EditorAssetLibrary.save_asset(new_asset_path)
-        unreal.EditorAssetLibrary.sync_browser_to_objects([blueprint])
+        unreal.EditorAssetLibrary.sync_browser_to_objects([new_asset_path])
 
         return blueprint
 
-
     def tweak_blueprint_from_model(self, model: ActorModel, new_asset_path: str):
-
         # 加载 BlueprintGeneratedClass
-        bp_class = unreal.EditorAssetLibrary.load_blueprint_class(new_asset_path)
-        if bp_class is None:
-            raise RuntimeError(f"无法加载 BlueprintGeneratedClass: {new_asset_path}")
-
-        cdo = unreal.get_default_object(bp_class)        
-        print(f"Loaded CDO: {cdo} Type={type(cdo)}")
+        bp = unreal.load_object(None,new_asset_path)
+        # ComponentBuilder needs BPasset rather BPgeneratedClass
+        bp_asset = unreal.BlueprintEditorLibrary.get_blueprint_asset(bp)
+        if bp_asset is None:
+            raise RuntimeError(f"无法加载 BlueprintAsset: {new_asset_path}")
         
-        if cdo is None:
-            raise RuntimeError(f"无法加载蓝图的 CDO: {new_asset_path}")
-
-        # 使用当前蓝图路径，而不是父类路径
-        builder = ComponentBuilder(cdo, new_asset_path)
-
+       
         # NonSceneComponent
+        root_handle = self.comp_builder.get_actor_root_handle(bp_asset)
+        # self.comp_builder.print_components_info(handles)
         for comp in model.components:
-            builder.build_non_scene_component(comp)
+            comp_name = comp.name
+            comp_class= get_unreal_class(comp.type)
+
+            comp_handle, comp_obj = self.comp_builder.get_component(bp_asset,comp_name)
+            
+            if comp_obj:
+                print(f"Comp {comp_name} {comp_class} Exists.") 
+            else:
+                comp_handle, comp_obj =self.comp_builder.add_component(root_handle,bp_asset,comp_class,comp_name)
+                print(f"Comp {comp_name} {comp_class} Added.")
+
+            apply_properties(comp_obj,comp.properties) #comp properties dict
 
         # SceneComponent
-        for sc in model.children:
-            builder.build_scene_component(sc, None)
-
+        # for sc in model.children:
+        #     self.comp_builder.build_scene_component(sc, None)
+        # TODO
+        
         # Actor 属性
-        self._apply_actor_properties(cdo, model.properties)
-
-        # transform 不适用于 CDO，跳过
-
+        # TODO
+        
         # 保存蓝图
         unreal.EditorAssetLibrary.save_asset(new_asset_path)
-
-        # # 同步到资产（不是类）
-        # blueprint = unreal.load_object(None, new_asset_path)
-        # unreal.EditorAssetLibrary.sync_browser_to_objects([blueprint])
+        unreal.EditorAssetLibrary.sync_browser_to_objects([new_asset_path])
 
     # ------------------------
     # 辅助函数

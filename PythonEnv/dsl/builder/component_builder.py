@@ -1,94 +1,164 @@
-# dsl/builder/component_builder.py
 import unreal
-from dsl.builder.ue_reflection import get_default_components
-from dsl.models.non_scene_component_model import NonSceneComponentModel
+from typing import Optional
+
 
 class ComponentBuilder:
+    def __init__(self):
+        self.SDS = unreal.get_engine_subsystem(unreal.SubobjectDataSubsystem)
+        self.BFL = unreal.SubobjectDataBlueprintFunctionLibrary
 
-    def __init__(self, actor, blueprint_class_path: str):
-        self.actor = actor
-        self.default_components = get_default_components(blueprint_class_path)
+    def get_actor_root_handle(self, object: Optional[unreal.Blueprint | unreal.Actor]):
+        handles = self._get_subobject_handles(object)
+        if not handles:
+            raise Exception("No subobject handles found.")
 
-    def build_non_scene_component(self, model:NonSceneComponentModel):
-        """
-        NonSceneComponentModel → UE Component
-        避免重复添加蓝图默认组件
-        """
-        # 如果蓝图类已经有这个组件
-        if model.name in self.default_components:
-            comp = self.default_components[model.name]
-            self._apply_properties(comp, model.properties)
-            return comp
+        h0 = handles[0]
+        subdata = self.BFL.get_data(h0)
+        if not self.BFL.is_actor(subdata):
+            raise Exception("The first handle is not an actor.")
+        return h0
 
-        # 否则创建新组件
-        comp_class = unreal.find_class(model.type)
-        comp = unreal.create_component(self.actor, comp_class, model.name)
-
-        self._apply_properties(comp, model.properties)
-        return comp
-
-    def build_scene_component(self, model, parent=None):
-        """
-        SceneComponentModel → UE SceneComponent
-        """
-        comp_class = unreal.find_class(model.type)
-        comp = unreal.create_component(self.actor, comp_class, model.name)
-
-        # attach
-        if parent:
-            comp.attach_to_component(parent, "None", unreal.AttachmentRule.KEEP_RELATIVE)
-
-        # transform
-        if model.transform:
-            self._apply_transform(comp, model.transform)
-
-        # properties
-        self._apply_properties(comp, model.properties)
-
-        # children
-        for child in model.children:
-            self.build_scene_component(child, comp)
-
-        # child_actor
-        if model.child_actor:
-            self._build_child_actor(comp, model.child_actor)
-
-        return comp
-
-    def _apply_transform(self, comp, transform):
-        if transform.location:
-            comp.set_relative_location(unreal.Vector(*transform.location))
-        if transform.rotation:
-            comp.set_relative_rotation(unreal.Rotator(*transform.rotation))
-        if transform.scale:
-            comp.set_relative_scale3d(unreal.Vector(*transform.scale))
-
-    def _apply_properties(self, comp, props: dict):
-        for key, value in props.items():
-            try:
-                unreal.Object.set_editor_property(comp, key, value)
-            except Exception as e:
-                unreal.log_warning(f"属性设置失败: {key}={value}, 错误: {e}")
-
-    def _build_child_actor(self, parent_comp, child_model):
-        """
-        ChildActorModel → ChildActorComponent
-        """
-        child_comp = unreal.create_component(
-            self.actor,
-            unreal.ChildActorComponent,
-            f"{child_model.class_name}_ChildActor"
+    def add_component(
+        self,
+        parent_handler: unreal.SubobjectDataHandle,
+        blueprint: unreal.Blueprint,
+        new_class,
+        name: str,
+    ) -> (unreal.SubobjectDataHandle, unreal.Object):
+        sub_handle, fail_reason = self.SDS.add_new_subobject(
+            params=unreal.AddNewSubobjectParams(
+                parent_handle=parent_handler,
+                new_class=new_class,
+                blueprint_context=blueprint,
+            )
         )
 
-        child_comp.attach_to_component(parent_comp, "None", unreal.AttachmentRule.KEEP_RELATIVE)
-        child_comp.set_child_actor_class(unreal.load_object(None, child_model.class_name))
+        if not fail_reason.is_empty():
+            raise Exception(
+                f"ERROR from sub_object_subsystem.add_new_subobject: {fail_reason}"
+            )
 
-        # 递归构建子 Actor 的组件
-        child_actor = child_comp.get_child_actor()
-        sub_builder = ComponentBuilder(child_actor, child_model.class_name)
+        self.SDS.rename_subobject(handle=sub_handle, new_name=unreal.Text(name))
+        self.SDS.attach_subobject(
+            owner_handle=parent_handler, child_to_add_handle=sub_handle
+        )
 
-        for c in child_model.components:
-            sub_builder.build_non_scene_component(c)
+        obj: unreal.Object = self._get_component_object(sub_handle, blueprint)
+        return sub_handle, obj
 
-        for sc in child_model.children:
-            sub_builder.build_scene_component(sc, None)
+    def get_component(
+        self,
+        blueprint: unreal.Blueprint,
+        name: str,
+        comp_type: Optional[unreal.Class] = None,
+    ) -> (unreal.SubobjectDataHandle, unreal.Object):
+        handles = self._get_subobject_handles(blueprint)
+        result = []
+        for h in handles:
+            if self.BFL.is_handle_valid(h):
+                subdata = self.BFL.get_data(h)
+                var_name = self.BFL.get_variable_name(subdata)
+                if var_name == name:
+                    obj = self._get_component_object(h, blueprint)
+                    if comp_type is None or isinstance(obj, comp_type):
+                        print(
+                            f"Component with name {name} and type {comp_type} found! "
+                        )
+                        result = [h, obj]
+        if not result:
+            print(f"Component with name {name} and type {comp_type} not found.")
+            return None, None
+        else:
+            return (*result,)
+
+    def get_components_of_type(
+        self, blueprint: unreal.Blueprint, comp_type: unreal.Class
+    ) -> list[(unreal.SubobjectDataHandle, unreal.Object)]:
+        result = []
+        handles = self._get_subobject_handles(blueprint)
+        for h in handles:
+            if self.BFL.is_handle_valid(h):
+                subdata = self.BFL.get_data(h)
+                obj = self._get_component_object(h, blueprint)
+                if obj.get_class() == comp_type:
+                    result.append((h, obj))
+        return result
+
+    def print_component_info_for_handle(self, h):
+        if self.BFL.is_handle_valid(h):
+            subdata = self.BFL.get_data(h)
+            comp_obj = self.BFL.get_object(subdata)
+            clsname = comp_obj.get_class().get_name()
+            # obj = self.BFL.get_object_for_blueprint(subdata, blueprint)
+            name = self.BFL.get_variable_name(subdata)
+            print(f"Component Name: {name}, Object: {comp_obj}")
+
+            is_component = self.BFL.is_component(subdata)
+            is_root = self.BFL.is_root_component(subdata)
+            is_scene = self.BFL.is_scene_component(subdata)
+            is_native = self.BFL.is_native_component(subdata)
+            is_inherited = self.BFL.is_inherited_component(subdata)
+            print(
+                f"   Is Component: {is_component}, Root Component: {is_root}, Scene Component: {is_scene}, Native Component: {is_native}, Inherited Component: {is_inherited} \n"
+            )
+
+        else:
+            print("Invalid handle:", h)
+
+    def _get_subobject_handles(self, object: Optional[unreal.Blueprint | unreal.Actor]):
+        if isinstance(object, unreal.Actor):
+            return self.SDS.k2_gather_subobject_data_for_instance(context=object)
+        elif isinstance(object, unreal.Blueprint):
+            return self.SDS.k2_gather_subobject_data_for_blueprint(context=object)
+        else:
+            raise Exception(f"Wrong type {type(object)}")
+
+    def print_components_info(
+        self, blueprint: Optional[unreal.Blueprint | unreal.Actor] = None
+    ):  
+        
+        handles = self._get_subobject_handles(blueprint)
+        if not handles:
+            raise Exception("No handles found.")
+
+        for h in handles:
+            if self.BFL.is_handle_valid(h):
+                subdata = self.BFL.get_data(h)
+                comp_obj = self.BFL.get_object(subdata)
+                clsname = comp_obj.get_class().get_name()
+                # obj = self.BFL.get_object_for_blueprint(subdata, blueprint)
+                name = self.BFL.get_variable_name(subdata)
+                print(f"Component Name: {name}, Object: {comp_obj}")
+
+                is_component = self.BFL.is_component(subdata)
+                is_root = self.BFL.is_root_component(subdata)
+                is_scene = self.BFL.is_scene_component(subdata)
+                is_native = self.BFL.is_native_component(subdata)
+                is_inherited = self.BFL.is_inherited_component(subdata)
+                print(
+                    f"   Is Component: {is_component}, Root Component: {is_root}, Scene Component: {is_scene}, Native Component: {is_native}, Inherited Component: {is_inherited} \n"
+                )
+
+            else:
+                print("Invalid handle:", h)
+
+    def _get_component_object(self, handle, actor):
+        if self.BFL.is_handle_valid(handle):
+            subdata = self.BFL.get_data(handle)
+            obj = self.BFL.get_object_for_blueprint(subdata, actor)
+            return obj
+
+
+# bp = unreal.load_object(None, r"/Game/Game/Generated/BP_TestActor")
+# builder = ComponentBuilder()
+# # handles = builder._get_subobject_handles(bp)
+# # builder.print_components_info(handles)
+
+# root_handle = builder.get_actor_root_handle(bp)
+# print("Root Handle Obtained.")
+# cls = getattr(unreal, "ChaosWheeledVehicleMovementComponent", None)
+# move_comp_handle, move_comp_obj = builder.get_component(bp, "VehicleMovementComponent", cls)
+
+# root= builder.get_actor_root_handle(bp)
+# h,_ = builder.add_component(root,bp,unreal.StaticMeshComponent,"TestStatisticMesh2")
+# builder.add_component(h,bp,unreal.StaticMeshComponent,"TestStatisticMesh3")

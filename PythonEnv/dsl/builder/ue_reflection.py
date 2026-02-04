@@ -51,7 +51,7 @@ def get_unreal_class(class_name: str):
     #         return eval(type_path) 
     #     except Exception: 
     #         pass
-    if "/" in class_name:
+    if '/' in class_name or '\\' in class_name :
         return unreal.EditorAssetLibrary.load_blueprint_class(class_name)
 
     # 2. 尝试从 unreal 模块直接 getattr 
