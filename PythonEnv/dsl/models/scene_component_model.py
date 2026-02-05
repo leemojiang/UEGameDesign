@@ -9,7 +9,7 @@ class SceneComponentModel(BaseModel):
     name: str
     attach_to: Optional[str] = None
     transform: Optional[Transform] = None
-    properties: Dict[str, Any] = {}
+    properties: BaseModel | Dict[str,Any] | None = None
     children: List["SceneComponentModel"] = []
     child_actor: Optional["ChildActorModel"] = None  # 由后面再绑定类型
 

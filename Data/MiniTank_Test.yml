@@ -13,9 +13,7 @@ Object:
     - type: ChaosWheeledVehicleMovementComponent
       name: ChaosWheeledVeichleMovement2
       properties: 
-        MaxRPM: 6500 
-        MaxSteeringAngle: 30 
-        DragCoefficient: 0.55
+        
   
   children:
     - type: SkeletalMeshComponent

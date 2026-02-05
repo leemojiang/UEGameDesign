@@ -4,7 +4,7 @@ from dsl.models.actor_model import ActorModel
 from dsl.models.scene_component_model import SceneComponentModel
 from dsl.models.non_scene_component_model import NonSceneComponentModel
 from dsl.models.child_actor_model import ChildActorModel
-from dsl.models.registry import SCENE_COMPONENTS, NON_SCENE_COMPONENTS
+from dsl.models.registry import SCENE_COMPONENTS, NON_SCENE_COMPONENTS,PROPERTY_SCHEMA_REGISTRY
 
 
 class ObjectParser:
@@ -36,6 +36,14 @@ class ObjectParser:
             if comp_type not in SCENE_COMPONENTS:
                 raise ValueError(f"{comp_type} 不是 SceneComponent（或未在 registry 中注册）")
 
+            # 找到 properties schema 
+            schema = PROPERTY_SCHEMA_REGISTRY.get(comp_type) 
+            if not schema: 
+                raise ValueError(f"Unknown component type: {comp_type}") 
+            
+            raw_properties = item.get("properties", {}) or {}
+            props = schema(**raw_properties)
+            
             # 递归解析 children
             children = self._parse_scene_components(item.get("children", []))
 
@@ -50,7 +58,7 @@ class ObjectParser:
                 name=item["name"],
                 attach_to=item.get("attach_to"),
                 transform=item.get("transform"),
-                properties=item.get("properties", {}),
+                properties=props,
                 children=children,
                 child_actor=child_actor,
             )
@@ -64,11 +72,19 @@ class ObjectParser:
             if comp_type not in NON_SCENE_COMPONENTS:
                 raise ValueError(f"{comp_type} 不是 NonSceneComponent（或未在 registry 中注册）")
 
+            prop_model = PROPERTY_SCHEMA_REGISTRY.get(comp_type)
+            if not prop_model:
+                raise ValueError(f"Unknown component type: {comp_type}")
+            
+            raw_properties = item.get("properties", {}) or {}
+            props = prop_model(**raw_properties)
+
             model = NonSceneComponentModel(
                 type=comp_type,
                 name=item["name"],
-                properties=item.get("properties", {}),
+                properties=props,
             )
+
             result.append(model)
         return result
 

@@ -5,4 +5,4 @@ from pydantic import BaseModel
 class NonSceneComponentModel(BaseModel):
     type: str
     name: str
-    properties: Dict[str, Any] = {}
+    properties: BaseModel | Dict[str,Any] |None = None

@@ -40,7 +40,7 @@
         },
 
         "properties": {
-          "type": "object",
+          "type": ["object", "null"],
           "description": "Actor-level Blueprint/C++ properties",
           "additionalProperties": true
         },
@@ -112,8 +112,9 @@
           },
           "additionalProperties": false
         },
+
         "properties": {
-          "type": "object",
+          "type": ["object", "null"],
           "additionalProperties": true
         },
 
@@ -130,7 +131,7 @@
           "properties": {
             "class": { "type": "string" },
             "properties": {
-              "type": "object",
+              "type": ["object", "null"],
               "additionalProperties": true
             },
             "children": {
@@ -160,7 +161,7 @@
           "type": "string"
         },
         "properties": {
-          "type": "object",
+          "type": ["object", "null"],
           "additionalProperties": true
         }
       },
