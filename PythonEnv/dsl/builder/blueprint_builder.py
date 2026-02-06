@@ -71,7 +71,9 @@ class BlueprintBuilder:
                 comp_handle, comp_obj =self.comp_builder.add_component(root_handle,bp_asset,comp_class,comp_name)
                 print(f"Comp {comp_name} {comp_class} Added.")
 
-            apply_properties(comp_obj,comp.properties) #comp properties dict
+            properties_model = comp.properties
+            apply_properties(comp_obj,properties_model.model_dump(serialize_as_any=True,exclude_none=True)) #comp properties dict
+            # apply_basemodel_properties(comp_obj,properties_model)
 
         # SceneComponent
         # for sc in model.children:
