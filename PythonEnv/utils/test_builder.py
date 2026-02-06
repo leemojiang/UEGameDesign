@@ -69,11 +69,15 @@ if __name__ == "__main__":
         # Print all components
         bp_asset = unreal.load_object(None, asset_path)
 
-        # builder.comp_builder.print_components_info(bp_asset)
+        # # builder.comp_builder.print_components_info(bp_asset)
         # _ , move_comp = builder.comp_builder.get_component(bp_asset,"VehicleMovementComponent")
-        # curve = get_nested_property(move_comp,"EngineSetup.TorqueCurve")
-        # float_curve = unreal.load_asset("/Game/Game/Generated/MyCurve")
-        # curve_float = curve.set_editor_property("ExternalCurve",float_curve)
+        # prop = get_nested_property(move_comp,"VehicleSetup")
+        # print(prop[0])
+
+        # print(type(prop[0]))
+        # print(prop[0].export_text())
+
+        # exit()
 
         num = builder.comp_builder.delete_all_components(bp_asset)
         print(f"Successfully Delete {num} comps.")

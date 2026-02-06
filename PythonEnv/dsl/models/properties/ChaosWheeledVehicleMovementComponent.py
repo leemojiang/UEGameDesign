@@ -1,35 +1,45 @@
-from dsl.models.registry import register_component,register_properties
-from pydantic import BaseModel
-from typing import Dict, List, Optional,Any
+from dsl.models.registry import register_component, register_properties
+from pydantic import BaseModel, field_serializer
+from typing import Dict, List, Optional, Any
 
 # ------------------------------------------------------------
 # 基础类型
 # ------------------------------------------------------------
 
+
 class EngineConfig(BaseModel):
+    model_config = {"extra": "forbid"}
+
+    # Example
+    # MaxTorque: 5000
+    # MaxRPM: 7900
+    # EngineIdleRPM: 900
+    # EngineBrakeEffect: 0.15
+    # EngineRevUpMOI : 5.0
+    # EngineRevDownRate: 500
+    # # TorqueCurve:  #Can't edit Curve
+    # #   ExternalCurve: /Game/Game/Generated/MyCurve.MyCurve
+    MaxTorque: Optional[float] = None
     MaxRPM: Optional[int] = None
-    # TorqueCurve: Optional[Dict[str, Any]] = None # Can't edit curve
     EngineIdleRPM: Optional[float] = None
     EngineBrakeEffect: Optional[float] = None
-    # EngineInertia: Optional[float] = None # No such 
+    EngineRevUpMOI: Optional[float] = None
+    EngineRevDownRate: Optional[float] = None
 
 
 class TransmissionConfig(BaseModel):
-    model_config = {
-        "extra": "forbid"
-    }
+    model_config = {"extra": "forbid"}
 
     bUseAutomaticGears: Optional[bool] = None
     FinalRatio: Optional[float] = None
     GearChangeTime: Optional[float] = None
     TransmissionEfficiency: Optional[float] = None
-    ChangeUpRPM: Optional[float] = None 
-    ChangeDownRPM: Optional[float] = None 
+    ChangeUpRPM: Optional[float] = None
+    ChangeDownRPM: Optional[float] = None
     ForwardGearRatios: Optional[List[float]] = None  # 每个档位的 GearRatio
     ReverseGearRatios: Optional[List[float]] = None  # 每个档位的 GearRatio
 
-
-    #Example
+    # Example
     # bUseAutomaticGears: true
     # FinalRatio: 3.42
     # GearChangeTime: 0.25
@@ -43,10 +53,19 @@ class TransmissionConfig(BaseModel):
 class DifferentialConfig(BaseModel):
     DifferentialType: Optional[str] = None  # LimitedSlip, Open, etc.
     FrontRearSplit: Optional[float] = None
-    LeftRightSplit: Optional[float] = None
-    CenterBias: Optional[float] = None
-    FrontBias: Optional[float] = None
-    RearBias: Optional[float] = None
+
+    @field_serializer("DifferentialType")
+    def serialize_diff(self, v, _info):
+        import unreal
+
+        if v == "ALL_WHEEL_DRIVE":
+            # print("!!! AllWheelDrive")
+            return unreal.VehicleDifferential.ALL_WHEEL_DRIVE
+        elif v == "FRONT_WHEEL_DRIVE":
+            return unreal.VehicleDifferential.FRONT_WHEEL_DRIVE
+        elif v == "REAR_WHEEL_DRIVE":
+            return unreal.VehicleDifferential.REAR_WHEEL_DRIVE
+        return v
 
 
 class SuspensionConfig(BaseModel):
@@ -58,48 +77,62 @@ class SuspensionConfig(BaseModel):
     MaxDrop: Optional[float] = None
 
 
-class WheelConfig(BaseModel):
+class ChaosWheelSetup(BaseModel):
     WheelClass: Optional[str] = None
     BoneName: Optional[str] = None
     AdditionalOffset: Optional[List[float]] = None  # X,Y,Z
-    bAffectedByHandbrake: Optional[bool] = None
-    bAffectedBySteering: Optional[bool] = None
-    WheelRadius: Optional[float] = None
-    WheelWidth: Optional[float] = None
-    TireFrictionMultiplier: Optional[float] = None
-    Suspension: Optional[SuspensionConfig] = None
 
+    def to_unreal(self, *args, **kwargs):
+        import unreal
+        from dsl.builder.ue_reflection import get_unreal_class
 
-class AerodynamicsConfig(BaseModel):
-    DragCoefficient: Optional[float] = None
-    DownforceCoefficient: Optional[float] = None
+        data = self.model_dump(*args, **kwargs)
+
+        wheel = unreal.ChaosWheelSetup()
+
+        for key, value in data.items():
+            if value is None:
+                continue
+            # 1. WheelClass: string → UClass
+            if key == "WheelClass":
+                cls = get_unreal_class(value)
+                if cls:
+                    wheel.set_editor_property("wheel_class", cls)
+                else:
+                    unreal.log_warning(f"WheelClass {value} not found.")
+                continue
+
+            # 2. AdditionalOffset: list → FVector
+            if key == "AdditionalOffset":
+                wheel.set_editor_property("additional_offset", unreal.Vector(*value))
+                continue
+
+            # 4. 默认处理：字段名转小写 → set_editor_property
+            wheel.set_editor_property(key.lower(), value)
+
+        return wheel
 
 
 class SteeringConfig(BaseModel):
-    SteeringCurve: Optional[Dict[str, float]] = None  # Speed → SteeringAngle
-    MaxSteeringAngle: Optional[float] = None
-
-
-class BrakeConfig(BaseModel):
-    MaxBrakeTorque: Optional[float] = None
-    MaxHandbrakeTorque: Optional[float] = None
+    # SteeringCurve: Optional[Dict[str, float]] = None  # Speed → SteeringAngle
+    AngleRatio: Optional[float] = None
 
 
 # ------------------------------------------------------------
 # ChaosWheeledVehicleMovementComponent 主配置
 # ------------------------------------------------------------
 
+
 @register_component("ChaosWheeledVehicleMovementComponent", is_scene=False)
 @register_properties("ChaosWheeledVehicleMovementComponent")
 class ChaosWheeledVehicleMovementProperties(BaseModel):
-    model_config = {
-        "extra": "forbid"
-    }
+    model_config = {"extra": "allow"}
 
-    # 基础动力学
+    # 基础动力学 VehicleSetups
     Mass: Optional[float] = None
     DragCoefficient: Optional[float] = None
     CenterOfMassOverride: Optional[List[float]] = None  # X,Y,Z
+    DownforceCoefficient: Optional[float] = None
 
     # 引擎
     EngineSetup: Optional[EngineConfig] = None
@@ -111,21 +144,14 @@ class ChaosWheeledVehicleMovementProperties(BaseModel):
     DifferentialSetup: Optional[DifferentialConfig] = None
 
     # 轮子数组
-    Wheels: Optional[List[WheelConfig]] = None
-
-    # 刹车
-    BrakingSetup: Optional[BrakeConfig] = None
-
-    # 空气动力学
-    AeroSetup: Optional[AerodynamicsConfig] = None
+    WheelSetups: Optional[List[ChaosWheelSetup]] = None
 
     # 转向
     SteeringSetup: Optional[SteeringConfig] = None
 
-    # 其他可选参数
-    MaxSteeringAngle: Optional[float] = None
-    MaxSpeed: Optional[float] = None
-    bUseAckermannSteering: Optional[bool] = None
+    @field_serializer("WheelSetups")
+    def serialize_wheelSetups(self, wheels, _info):
+        return [wheel.to_unreal() for wheel in wheels]
 
 
 print("ChaosWheeledVehicleMovementComponent Registered!")

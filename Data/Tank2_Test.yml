@@ -6,88 +6,47 @@ Object:
     - type: ChaosWheeledVehicleMovementComponent
       name: VehicleMovementComponent
       properties:
-        Mass: 1500
-        DragCoefficient: 0.55
-        CenterOfMassOverride: [0, 0, -10]
+        # Mass: 1500
+        # DragCoefficient: 0.55
+        # CenterOfMassOverride: [0, 0, -10]
 
-        EngineSetup:
-          MaxRPM: 7900
-          EngineIdleRPM: 900
-          EngineBrakeEffect: 0.15
-          # EngineInertia: 0.12 # No this property
-          # TorqueCurve:  #Can't edit Curve
-          #   ExternalCurve: /Game/Game/Generated/MyCurve.MyCurve
+        # EngineSetup:
+        #   MaxTorque: 5000
+        #   MaxRPM: 7900
+        #   EngineIdleRPM: 900
+        #   EngineBrakeEffect: 0.15
+        #   EngineRevUpMOI : 5.0
+        #   EngineRevDownRate: 500
+        #   # TorqueCurve:  #Can't edit Curve
+        #   #   ExternalCurve: /Game/Game/Generated/MyCurve.MyCurve
 
-        TransmissionSetup:
-          bUseAutomaticGears: true
-          FinalRatio: 3.42
-          GearChangeTime: 0.25
-          TransmissionEfficiency: 0.98
-          ChangeUpRPM: 3000
-          ChangeDownRPM: 1500
-          ForwardGearRatios: [3.1, 2.2, 1.6, 1.2, 1.0, 0.85]
-          ReverseGearRatios: [2.86,2.86]
+        # TransmissionSetup:
+        #   bUseAutomaticGears: true
+        #   FinalRatio: 3.42
+        #   GearChangeTime: 0.25
+        #   TransmissionEfficiency: 0.98
+        #   ChangeUpRPM: 3000
+        #   ChangeDownRPM: 1500
+        #   ForwardGearRatios: [3.1, 2.2, 1.6, 1.2, 1.0, 0.85]
+        #   ReverseGearRatios: [2.86,2.86]
 
 
         # DifferentialSetup:
-        #   DifferentialType: "LimitedSlip"
+        #   DifferentialType: "ALL_WHEEL_DRIVE"
         #   FrontRearSplit: 0.5
-        #   CenterBias: 1.3
-        #   FrontBias: 1.2
-        #   RearBias: 1.2
 
-        # Wheels:
+        # WheelSetups:
         #   - WheelClass: "/Game/Vehicles/Wheel_Front"
-        #     BoneName: "Wheel_FL"
-        #     bAffectedBySteering: true
-        #     WheelRadius: 34
-        #     WheelWidth: 20
-        #     TireFrictionMultiplier: 1.2
-        #     Suspension:
-        #       SpringRate: 35000
-        #       ShockStiffness: 4500
-        #       ShockDamping: 4500
-        #       MaxRaise: 10
-        #       MaxDrop: 12
+        #     BoneName: "Wheel_FxFL"
+        #     AdditionalOffset: [0, 0, -10]
 
         #   - WheelClass: "/Game/Vehicles/Wheel_Front"
-        #     BoneName: "Wheel_FR"
-        #     bAffectedBySteering: true
-        #     WheelRadius: 34
-        #     WheelWidth: 20
-        #     TireFrictionMultiplier: 1.2
+        #     BoneName: "Wheel_FdFL"
+        #     AdditionalOffset: [0, 0, -10]
 
-        #   - WheelClass: "/Game/Vehicles/Wheel_Rear"
-        #     BoneName: "Wheel_RL"
-        #     bAffectedByHandbrake: true
-        #     WheelRadius: 34
-        #     WheelWidth: 20
-        #     TireFrictionMultiplier: 1.1
-
-        #   - WheelClass: "/Game/Vehicles/Wheel_Rear"
-        #     BoneName: "Wheel_RR"
-        #     bAffectedByHandbrake: true
-        #     WheelRadius: 34
-        #     WheelWidth: 20
-        #     TireFrictionMultiplier: 1.1
-
-        # BrakingSetup:
-        #   MaxBrakeTorque: 3000
-        #   MaxHandbrakeTorque: 5000
-
-        # AeroSetup:
-        #   DragCoefficient: 0.55
-        #   DownforceCoefficient: 1.2
-
-        # SteeringSetup:
-        #   MaxSteeringAngle: 35
-        #   SteeringCurve:
-        #     "0": 1.0
-        #     "60": 0.6
-        #     "120": 0.3
-
-        # bUseAckermannSteering: true
-        # MaxSpeed: 220
+        #   - WheelClass: "/Game/Vehicles/Wheel_Front"
+        #     BoneName: "Wheel_FFsL"
+        #     AdditionalOffset: [0, 0, -10]
 
   children:
     - type: SkeletalMeshComponent
