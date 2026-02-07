@@ -39,7 +39,7 @@ def apply_properties(obj, props: dict , ignore_keys = []):
         else:  
             try:
                 obj.set_editor_property(key, value)
-                print(f"Set {key} : {value} for {obj}")
+                print(f"Set {key} : {value} for {obj.get_name()}")
             except Exception as e:
                 unreal.log_warning(f"[Actor属性失败] {key}={value}, 错误: {e}")
 

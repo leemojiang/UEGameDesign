@@ -105,21 +105,11 @@ class BlueprintBuilder:
         properties_model = comp_model.properties
         apply_properties(comp_obj,properties_model.model_dump(serialize_as_any=True,exclude_none=True)) #comp properties dict
 
+        if comp_model.transform:
+            apply_properties(comp_obj,comp_model.transform.model_dump(exclude_none=True)) #comp properties dict
+
         # 递归子组件
         for child in comp_model.children:
             self._build_scene_component(child,bp_asset, comp_handle)
 
-    def _apply_actor_properties(self, actor, props: dict):
-        for key, value in props.items():
-            try:
-                actor.set_editor_property(key, value)
-            except Exception as e:
-                unreal.log_warning(f"[Actor属性失败] {key}={value}, 错误: {e}")
 
-    def _apply_actor_transform(self, actor, transform):
-        if transform.location:
-            actor.set_actor_relative_location(unreal.Vector(*transform.location))
-        if transform.rotation:
-            actor.set_actor_relative_rotation(unreal.Rotator(*transform.rotation))
-        if transform.scale:
-            actor.set_actor_relative_scale3d(unreal.Vector(*transform.scale))

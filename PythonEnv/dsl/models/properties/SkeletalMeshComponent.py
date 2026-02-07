@@ -1,8 +1,8 @@
 # SkeletalMeshComponent
 from dsl.models.registry import register_component,register_properties
-from pydantic import BaseModel
+from pydantic import BaseModel, field_serializer
 from typing import List, Optional, Dict
-
+import unreal
 
 # ------------------------------------------------------------
 # 子类型：LOD 配置
@@ -80,37 +80,42 @@ class SkeletalMeshImportConfig(BaseModel):
 
 @register_component("SkeletalMeshComponent", is_scene=False)
 @register_properties("SkeletalMeshComponent")
-class SkeletalMeshConfig(BaseModel):
+class SkeletalMeshComponentProperties(BaseModel):
     model_config = {
-        "extra": "forbid"
+        "extra": "allow"
     }
 
     # 基础属性
-    MeshPath: Optional[str] = None
-    SkeletonPath: Optional[str] = None
-    Materials: Optional[List[str]] = None
+    SkeletalMeshAsset: Optional[str] = None
+    # SkeletonPath: Optional[str] = None
+    # Materials: Optional[List[str]] = None
 
-    # LODs
-    LODSettings: Optional[List[SkeletalMeshLODConfig]] = None
+    # # LODs
+    # LODSettings: Optional[List[SkeletalMeshLODConfig]] = None
 
-    # Physics
-    PhysicsSetup: Optional[SkeletalMeshPhysicsConfig] = None
+    # # Physics
+    # PhysicsSetup: Optional[SkeletalMeshPhysicsConfig] = None
 
-    # Sockets
-    Sockets: Optional[List[SkeletalMeshSocketConfig]] = None
+    # # Sockets
+    # Sockets: Optional[List[SkeletalMeshSocketConfig]] = None
 
-    # Bounds
-    Bounds: Optional[SkeletalMeshBoundsConfig] = None
+    # # Bounds
+    # Bounds: Optional[SkeletalMeshBoundsConfig] = None
 
-    # Animation
-    AnimationSetup: Optional[SkeletalMeshAnimationConfig] = None
+    # # Animation
+    # AnimationSetup: Optional[SkeletalMeshAnimationConfig] = None
 
-    # Import 信息
-    ImportSettings: Optional[SkeletalMeshImportConfig] = None
+    # # Import 信息
+    # ImportSettings: Optional[SkeletalMeshImportConfig] = None
 
-    # 其他可选属性
-    bEnableShadowCasting: Optional[bool] = None
-    bUseHighPrecisionTangents: Optional[bool] = None
-    bSupportRayTracing: Optional[bool] = None
+    # # 其他可选属性
+    # bEnableShadowCasting: Optional[bool] = None
+    # bUseHighPrecisionTangents: Optional[bool] = None
+    # bSupportRayTracing: Optional[bool] = None
+
+    @field_serializer("SkeletalMeshAsset")
+    def serialize_wheelSetups(self, mesh_path, _info):
+        return unreal.load_asset(mesh_path) if mesh_path else None
+
 
 print("SkeletalMeshComponent Registered!")

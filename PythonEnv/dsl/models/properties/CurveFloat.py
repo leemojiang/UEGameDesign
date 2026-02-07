@@ -3,6 +3,7 @@ from pydantic import BaseModel, field_serializer
 from dsl.builder.ue_reflection import get_unreal_class, create_unreal_asset
 import unreal
 
+# Base Date asset/types.
 class CurveFloat(BaseModel):
     ExternalCurve: Optional[str] = None # '/Game/Game/Generated/MyCurve.MyCurve'
     #<Object '/Game/Game/Generated/MyCurve.MyCurve' (0x000001D2FA1D2100) Class 'CurveFloat'>

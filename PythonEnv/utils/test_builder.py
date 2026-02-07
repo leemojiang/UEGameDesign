@@ -41,9 +41,9 @@ if __name__ == "__main__":
     # b = get_unreal_class("/Game/Game/Core/Veichles/BP_VeichlePawnBase")
     # print(b)
 
-    yaml_path = r"C:\Users\LEEL\Desktop\UEGameDesign\Data\Tank2_Test.yml"
+    yaml_path = r"C:\Users\LEEL\Desktop\UEGameDesign\Data\Panzer2.yml"
     schema_path = r"C:\Users\LEEL\Desktop\UEGameDesign\Data\scheme.json"
-    asset_path = r"/Game/Game/Generated/BP_TestActor"
+    asset_path = r"/Game/Game/Generated/Panzer2/BP_Panzer2_Generated"
 
     # Validator
     validator = Validator(schema_path)
@@ -76,8 +76,8 @@ if __name__ == "__main__":
         # print(type(prop))
 
     
-        num = builder.comp_builder.delete_all_components(bp_asset)
-        print(f"Successfully Delete {num} comps.")
+        # num = builder.comp_builder.delete_all_components(bp_asset)
+        # print(f"Successfully Delete {num} comps.")
 
         builder.tweak_blueprint_from_model(actor_model, asset_path)
         print(f"Blueprint '{asset_path}' 调整完成。")
