@@ -1,7 +1,7 @@
 from dsl.models.registry import register_component, register_properties
 from pydantic import BaseModel, field_serializer
 from typing import Dict, List, Optional, Any
-
+from dsl.models.properties.CurveFloat import CurveFloat
 # ------------------------------------------------------------
 # 基础类型
 # ------------------------------------------------------------
@@ -17,14 +17,16 @@ class EngineConfig(BaseModel):
     # EngineBrakeEffect: 0.15
     # EngineRevUpMOI : 5.0
     # EngineRevDownRate: 500
-    # # TorqueCurve:  #Can't edit Curve
-    # #   ExternalCurve: /Game/Game/Generated/MyCurve.MyCurve
+    # TorqueCurve:  #Can't edit Curve
+    #   ExternalCurve: /Game/Game/Generated/MyCurve.MyCurve
+
     MaxTorque: Optional[float] = None
     MaxRPM: Optional[int] = None
     EngineIdleRPM: Optional[float] = None
     EngineBrakeEffect: Optional[float] = None
     EngineRevUpMOI: Optional[float] = None
     EngineRevDownRate: Optional[float] = None
+    TorqueCurve: Optional[CurveFloat] = None
 
 
 class TransmissionConfig(BaseModel):

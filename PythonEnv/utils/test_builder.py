@@ -69,16 +69,13 @@ if __name__ == "__main__":
         # Print all components
         bp_asset = unreal.load_object(None, asset_path)
 
-        # # builder.comp_builder.print_components_info(bp_asset)
+        # builder.comp_builder.print_components_info(bp_asset)
         # _ , move_comp = builder.comp_builder.get_component(bp_asset,"VehicleMovementComponent")
-        # prop = get_nested_property(move_comp,"VehicleSetup")
-        # print(prop[0])
+        # prop = get_nested_property(move_comp,"EngineSetup.TorqueCurve.ExternalCurve")
+        # print(prop)
+        # print(type(prop))
 
-        # print(type(prop[0]))
-        # print(prop[0].export_text())
-
-        # exit()
-
+    
         num = builder.comp_builder.delete_all_components(bp_asset)
         print(f"Successfully Delete {num} comps.")
 

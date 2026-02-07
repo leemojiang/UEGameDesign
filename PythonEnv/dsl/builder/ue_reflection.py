@@ -138,6 +138,39 @@ def get_unreal_class(class_name: str):
     
     raise Exception(f"No {class_name} in unreal.")
 
+def create_unreal_asset(asset_path: str,asset_class: str):
+    """ 创建一个新的 Unreal 资产
+    asset_path: /Game/Path/To/AssetName
+    asset_class: Blueprint,Material,StaticMesh 等等
+    """
+    factory = None
+    # if asset_class == "Blueprint":
+    #     factory = unreal.BlueprintFactory()
+    # elif asset_class == "Material":
+    #     factory = unreal.MaterialFactoryNew()
+    if asset_class == "CurveFloat":
+        factory = unreal.CurveFloatFactory()
+    else:
+        raise Exception(f"Unsupported asset class: {asset_class}")
+
+    asset_tools = unreal.AssetToolsHelpers.get_asset_tools()
+    asset_name = asset_path.split("/")[-1]
+    package_path = "/".join(asset_path.split("/")[:-1])
+
+    new_asset = asset_tools.create_asset(
+        asset_name,
+        package_path,
+        get_unreal_class(asset_class),
+        factory
+    )
+    if new_asset:
+        unreal.EditorAssetLibrary.save_asset(asset_path)
+        unreal.log(f"FloatCurve created: {new_asset.get_path_name()}")
+    
+
+    return new_asset
+
+
 def get_cdo_components(class_path: str) -> dict:
     """
     传入蓝图“类路径”或“资产路径”都可以，比如：

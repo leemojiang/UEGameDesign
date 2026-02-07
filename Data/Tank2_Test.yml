@@ -10,15 +10,15 @@ Object:
         # DragCoefficient: 0.55
         # CenterOfMassOverride: [0, 0, -10]
 
-        # EngineSetup:
-        #   MaxTorque: 5000
+        EngineSetup:
+          MaxTorque: 5000
         #   MaxRPM: 7900
         #   EngineIdleRPM: 900
         #   EngineBrakeEffect: 0.15
         #   EngineRevUpMOI : 5.0
         #   EngineRevDownRate: 500
-        #   # TorqueCurve:  #Can't edit Curve
-        #   #   ExternalCurve: /Game/Game/Generated/MyCurve.MyCurve
+          TorqueCurve:  #Can't edit Curve
+            ExternalCurve: /Game/Game/Generated/MyCurve_Engine2
 
         # TransmissionSetup:
         #   bUseAutomaticGears: true
