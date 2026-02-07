@@ -52,4 +52,7 @@ Object:
     - type: SkeletalMeshComponent
       name: Mesh
       properties:
-        MeshPath: /Game/Game/Veichles/Panzer2/Mesh/Panzer2.Panzer2'
+        MeshPath: /Game/Game/Veichles/Panzer2/Mesh/Panzer2
+      children:
+      - type: SkeletalMeshComponent
+        name: Mesh_child

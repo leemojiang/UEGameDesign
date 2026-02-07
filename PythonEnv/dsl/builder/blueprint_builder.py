@@ -1,3 +1,4 @@
+from pydantic import BaseModel
 import unreal
 from dsl.builder.component_builder import ComponentBuilder
 from dsl.models.actor_model import ActorModel
@@ -76,9 +77,8 @@ class BlueprintBuilder:
             # apply_basemodel_properties(comp_obj,properties_model)
 
         # SceneComponent
-        # for sc in model.children:
-        #     self.comp_builder.build_scene_component(sc, None)
-        # TODO
+        for sc in model.children:
+            self._build_scene_component(sc, bp_asset, root_handle)
         
         # Actor 属性
         # TODO
@@ -90,6 +90,24 @@ class BlueprintBuilder:
     # ------------------------
     # 辅助函数
     # ------------------------
+    def _build_scene_component(self, comp_model,bp_asset, parent_handle):
+        comp_name = comp_model.name
+        comp_class= get_unreal_class(comp_model.type)
+
+        comp_handle, comp_obj = self.comp_builder.get_component(bp_asset,comp_name)
+        
+        if comp_obj:
+            print(f"Scene Comp {comp_name} {comp_class} Exists.") 
+        else:
+            comp_handle, comp_obj =self.comp_builder.add_component(parent_handle,bp_asset,comp_class,comp_name)
+            print(f"Scene Comp {comp_name} {comp_class} Added.")
+
+        properties_model = comp_model.properties
+        apply_properties(comp_obj,properties_model.model_dump(serialize_as_any=True,exclude_none=True)) #comp properties dict
+
+        # 递归子组件
+        for child in comp_model.children:
+            self._build_scene_component(child,bp_asset, comp_handle)
 
     def _apply_actor_properties(self, actor, props: dict):
         for key, value in props.items():
