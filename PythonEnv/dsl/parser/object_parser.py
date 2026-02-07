@@ -18,12 +18,23 @@ class ObjectParser:
 
         children = self._parse_scene_components(obj.get("children", []))
         components = self._parse_non_scene_components(obj.get("components", []))
+        
+        # Actor Properties 检查
+        actor_class = obj.get("class")
+        actor_schema = PROPERTY_SCHEMA_REGISTRY.get(actor_class)
+        props = obj.get("properties", {}) or {}
+        if not actor_schema: 
+            # raise ValueError(f"Unknown Actor class: {actor_class}") 
+            print(f"Unknown Actor class: {actor_class} Use AnyProperties instead.") 
+            props = PROPERTY_SCHEMA_REGISTRY["AnyProperties"](**props)
+        else:
+            props = actor_schema(**props)
 
         actor = ActorModel(
             class_name=obj["class"],
             name=obj.get("name", obj["class"]),
             transform=obj.get("transform"),
-            properties=obj.get("properties", {}),
+            properties=props,
             children=children,
             components=components,
         )
@@ -39,7 +50,9 @@ class ObjectParser:
             # 找到 properties schema 
             schema = PROPERTY_SCHEMA_REGISTRY.get(comp_type) 
             if not schema: 
-                raise ValueError(f"Unknown component type: {comp_type}") 
+                # raise ValueError(f"Unknown component type: {comp_type}")
+                print(f"Unknown component type: {comp_type} Use AnyProperties instead.")
+                schema = PROPERTY_SCHEMA_REGISTRY["AnyProperties"] 
             
             raw_properties = item.get("properties", {}) or {}
             props = schema(**raw_properties)
@@ -72,12 +85,14 @@ class ObjectParser:
             if comp_type not in NON_SCENE_COMPONENTS:
                 raise ValueError(f"{comp_type} 不是 NonSceneComponent（或未在 registry 中注册）")
 
-            prop_model = PROPERTY_SCHEMA_REGISTRY.get(comp_type)
-            if not prop_model:
-                raise ValueError(f"Unknown component type: {comp_type}")
+            schema = PROPERTY_SCHEMA_REGISTRY.get(comp_type)
+            if not schema:
+                # raise ValueError(f"Unknown component type: {comp_type}")
+                print(f"Unknown component type: {comp_type} Use AnyProperties instead.")
+                schema = PROPERTY_SCHEMA_REGISTRY["AnyProperties"]
             
             raw_properties = item.get("properties", {}) or {}
-            props = prop_model(**raw_properties)
+            props = schema(**raw_properties)
 
             model = NonSceneComponentModel(
                 type=comp_type,
@@ -94,7 +109,7 @@ class ObjectParser:
 
         return ChildActorModel(
             class_name=data["class"],
-            properties=data.get("properties", {}),
+            properties=PROPERTY_SCHEMA_REGISTRY.get(data["class"], PROPERTY_SCHEMA_REGISTRY["AnyProperties"])(**data.get("properties", {})),
             children=children,
             components=components,
         )

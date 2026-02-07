@@ -43,7 +43,7 @@ if __name__ == "__main__":
 
     yaml_path = r"C:\Users\LEEL\Desktop\UEGameDesign\Data\Panzer2.yml"
     schema_path = r"C:\Users\LEEL\Desktop\UEGameDesign\Data\scheme.json"
-    asset_path = r"/Game/Game/Generated/Panzer2/BP_Panzer2_Generated"
+    asset_path = r"/Game/Game/Generated/Panzer2/"
 
     # Validator
     validator = Validator(schema_path)
@@ -59,15 +59,15 @@ if __name__ == "__main__":
 
     for yaml_obj in yaml_data:
         actor_model = parser.parse(yaml_obj)
-        # print(actor_model.model_dump_json(indent=4, ensure_ascii=False))
+        # print(actor_model.model_dump_json(indent=4, ensure_ascii=False,serialize_as_any=True))
 
-        blueprint = builder.create_blueprint_from_model(
+        blueprint, asset_file_dir = builder.create_blueprint_from_model(
             actor_model, asset_path, overwrite=False
         )
         print(f"Blueprint '{blueprint.get_name()}' 构建完成。")
 
         # Print all components
-        bp_asset = unreal.load_object(None, asset_path)
+        # bp_asset= unreal.load_object(None, asset_path)
 
         # builder.comp_builder.print_components_info(bp_asset)
         # _ , move_comp = builder.comp_builder.get_component(bp_asset,"VehicleMovementComponent")
@@ -79,5 +79,5 @@ if __name__ == "__main__":
         # num = builder.comp_builder.delete_all_components(bp_asset)
         # print(f"Successfully Delete {num} comps.")
 
-        builder.tweak_blueprint_from_model(actor_model, asset_path)
+        builder.tweak_blueprint_from_model(actor_model, asset_file_dir)
         print(f"Blueprint '{asset_path}' 调整完成。")

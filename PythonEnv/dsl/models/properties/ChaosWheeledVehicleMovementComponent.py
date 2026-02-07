@@ -116,7 +116,7 @@ class ChaosWheelSetup(BaseModel):
 
 
 class SteeringConfig(BaseModel):
-    # SteeringCurve: Optional[Dict[str, float]] = None  # Speed → SteeringAngle
+    SteeringCurve: Optional[CurveFloat] = None  # Speed → SteeringAngle
     AngleRatio: Optional[float] = None
 
 
