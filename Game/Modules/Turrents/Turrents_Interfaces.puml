@@ -13,9 +13,16 @@ interface ITurret{
     + AddPitchInput(axisValue : float) : void
 
     .. Query ..
-    + GetCurrentYaw() : float
+    ' local rotation in turret's space, not world space
+    + GetCurrentYaw() : float 
     + GetCurrentPitch() : float
     + IsAimedAt(targetLocation : vector3, threshold : float) : bool
 }
+
+interface ITurretOwner{
+    + RegisterTurret(turret : ITurret*) : void
+}
+
+
 
 @enduml

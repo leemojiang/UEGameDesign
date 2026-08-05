@@ -1,4 +1,14 @@
 @startuml
+
+interface ITank{
+    -- Hand Control --
+    + SetYawnInput(Value : float) : void
+    
+
+}
+
+
+
 interface IVehicle {
     -- Movement --
     + SetThrottleInput(Value : float) : void

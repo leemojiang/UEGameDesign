@@ -1,0 +1,12 @@
+@startuml
+
+' Unreal Engine Interface for Pawn
+interface IPawn {
+    + AddControllerRollInput(RollInput: float) void
+    + AddControllerPitchInput(PitchInput: float) void
+    + AddControllerYawInput(YawInput: float) void
+
+    
+}
+
+@enduml

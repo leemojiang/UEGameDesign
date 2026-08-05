@@ -127,6 +127,13 @@ class UChaosVehicleWheel {
 ' 轮子的配置类 还需要传入一个行为类 UChaosVehicleWheel 来规定轮子的运行效果 比如是否接地 旋转等
 ' =============================
 class BP_VeichlePawnBase: <<AChaosWheeledVehiclePawn>>  {
+    -- Public Properties --
+    + steeringTurnRateCurve : CurveFloat*
+    - isBodyYawSpeedExceeded() : bool
+    -- TODO --
+    + maxForwardSpeed : float
+    + maxBackwardSpeed : float
+
     -- Components --
     - VehicleMovementComponent : UChaosWheeledVehicleMovementComponent*
     - VehicleCameraManager : UCameraManagerComponent*

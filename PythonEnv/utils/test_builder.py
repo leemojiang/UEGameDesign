@@ -41,9 +41,9 @@ if __name__ == "__main__":
     # b = get_unreal_class("/Game/Game/Core/Veichles/BP_VeichlePawnBase")
     # print(b)
 
-    yaml_path = r"C:\Users\LEEL\Desktop\UEGameDesign\Data\Panzer2.yml"
+    yaml_path = r"C:\Users\LEEL\Desktop\UEGameDesign\Data\TestVehicle.yml"
     schema_path = r"C:\Users\LEEL\Desktop\UEGameDesign\Data\scheme.json"
-    asset_path = r"/Game/Game/Generated/Panzer2/"
+    asset_path = r"/Game/Game/Vehicles/TestVehicle/"
 
     # Validator
     validator = Validator(schema_path)

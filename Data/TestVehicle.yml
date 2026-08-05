@@ -1,0 +1,137 @@
+Object:
+  class: ChaosVehicleWheel
+  name: Test_Vehicle_Wheel_Middle
+  properties:
+    Offset: [0, 0, 0]
+    WheelRadius: 22.0
+    WheelWidth: 30.0
+    # WheelMass: 80.0
+    
+    bAffectedByBrake: True
+    bAffectedByHandbrake: True
+    bAffectedByEngine: True
+    # bABSEnabled: True
+    bTractionControlEnabled: True
+
+---
+Object:
+  class: /Game/Game/Core/Vehicle/BP_VeichlePawnBase
+  name: BP_Test_Vehicle_Generated
+
+  properties:
+    steeringTurnRateCurve: /Game/Game/Vehicles/Common/SteerAngularSpeedCurve
+    # MaxForwardSpeed: 1200.0
+    # MaxBackwardSpeed: 800.0
+
+  components:
+    - type: ChaosWheeledVehicleMovementComponent
+      name: VehicleMovementComponent
+      properties:
+        
+
+        # Mass: 10000
+        # DragCoefficient: 1
+        # # CenterOfMassOverride: [0, 0, -10]
+
+        # Necessary for tank-like steering
+        TorqueControl:
+          Enabled: true
+          YawTorqueScaling: 6.0
+
+        # YawInputRate:
+        #   RiseRate: 100
+        #   FallRate: 100
+
+        # EngineSetup:
+        #   MaxTorque: 4000
+        #   MaxRPM: 2500
+        #   EngineIdleRPM: 1500
+        #   EngineBrakeEffect: 1
+        #   # #   EngineRevUpMOI : 5.0
+        #   # EngineRevDownRate: 8000
+        #   TorqueCurve: #Can't edit Curve
+        #     ExternalCurve: /Game/Game/Generated/Panzer2/FC_Panzer2_TorqueCurve
+
+        # TransmissionSetup:
+        #   bUseAutomaticGears: true
+        #   FinalRatio: 3.42
+        #   GearChangeTime: 0.25
+        #   TransmissionEfficiency: 0.98
+        #   ChangeUpRPM: 3000
+        #   ChangeDownRPM: 1500
+        #   ForwardGearRatios: [3.1, 2.2, 1.6, 1.2, 1.0, 0.85]
+        #   ReverseGearRatios: [2.86,2.86]
+
+        # DifferentialSetup:
+        #   DifferentialType: "ALL_WHEEL_DRIVE"
+        #   FrontRearSplit: 0.5
+
+        # SteeringSetup:
+        #   SteeringCurve:
+        #     ExternalCurve: /Game/Game/Generated/Panzer2/FC_Panzer2_SteeringCurve
+
+        WheelSetups:
+          - WheelClass: "/Game/Game/Vehicles/TestVehicle/Test_Vehicle_Wheel_Middle"
+            BoneName: "wheel_l1"
+            AdditionalOffset: [0, 0, 0]
+
+          - WheelClass: "/Game/Game/Vehicles/TestVehicle/Test_Vehicle_Wheel_Middle"
+            BoneName: "wheel_l2"
+            AdditionalOffset: [0, 0, 0]
+
+          - WheelClass: "/Game/Game/Vehicles/TestVehicle/Test_Vehicle_Wheel_Middle"
+            BoneName: "wheel_l3"
+            AdditionalOffset: [0, 0, 0]
+
+          - WheelClass: "/Game/Game/Vehicles/TestVehicle/Test_Vehicle_Wheel_Middle"
+            BoneName: "wheel_l4"
+            AdditionalOffset: [0, 0, 0]
+
+          - WheelClass: "/Game/Game/Vehicles/TestVehicle/Test_Vehicle_Wheel_Middle"
+            BoneName: "wheel_l5"
+            AdditionalOffset: [0, 0, 0]
+
+          - WheelClass: "/Game/Game/Vehicles/TestVehicle/Test_Vehicle_Wheel_Middle"
+            BoneName: "wheel_r1"
+            AdditionalOffset: [0, 0, 0]
+
+          - WheelClass: "/Game/Game/Vehicles/TestVehicle/Test_Vehicle_Wheel_Middle"
+            BoneName: "wheel_r2"
+            AdditionalOffset: [0, 0, 0]
+
+          - WheelClass: "/Game/Game/Vehicles/TestVehicle/Test_Vehicle_Wheel_Middle"
+            BoneName: "wheel_r3"
+            AdditionalOffset: [0, 0, 0]
+
+          - WheelClass: "/Game/Game/Vehicles/TestVehicle/Test_Vehicle_Wheel_Middle"
+            BoneName: "wheel_r4"
+            AdditionalOffset: [0, 0, 0]
+
+          - WheelClass: "/Game/Game/Vehicles/TestVehicle/Test_Vehicle_Wheel_Middle"
+            BoneName: "wheel_r5"
+            AdditionalOffset: [0, 0, 0]
+
+  children:
+    - type: SkeletalMeshComponent
+      name: Mesh
+      properties:
+        SkeletalMeshAsset: /Game/Game/Vehicles/TestVehicle/BasicVehicle
+        
+        BodyInstance:
+          bSimulatePhysics: true
+
+    - type: SpringArmComponent
+      name: SpringArm
+        
+      properties:
+        TargetArmLength: 700.0
+        TargetOffset: [0.0, 0.0, 80.0]
+        SocketOffset: [0.0, 0.0, 0.0]
+        bUsePawnControlRotation: true
+
+      children:
+        - type: CameraComponent
+          name: Camera
+          properties:
+            FieldOfView: 120.0
+            bUsePawnControlRotation: false
